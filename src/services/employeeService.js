@@ -1,8 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 
 const fetchEmployees = async () => {
-  const res = await fetch('/api/employees');
-  return res.json();
+  const response = await fetch('/api/employees');
+  if (!response.ok) {
+    throw new Error('Network response was not ok');
+  }
+  return response.json();
 };
 
 export const useGetEmployees = () => {
