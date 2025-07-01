@@ -16,7 +16,7 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4 font-sans">
+        <div className="min-h-screen flex items-center justify-center bg-white p-4 font-sans">
             <div className="w-full max-w-md">
                 {/* Header Section */}
                 <div className="text-center mb-8">
@@ -26,7 +26,7 @@ const LoginPage = () => {
                 </div>
 
                 {/* Login Form Card */}
-                <div className="bg-white p-8 rounded-xl shadow-lg">
+                <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">
                     <div className="space-y-6">
                         {/* Email Input */}
                         <div>
