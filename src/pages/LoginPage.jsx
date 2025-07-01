@@ -1,40 +1,82 @@
+import React, { useState } from 'react';
 import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { Password } from 'primereact/password';
 
-function LoginPage() {
-  // Login function to handle login logic
-  <div id="loginPage" class="page active">
-        <div class="min-h-screen flex items-center justify-center bg-slate-100 p-4">
-            <div class="w-full max-w-md">
-                <div class="text-center mb-8">
-                    <i class="fas fa-sitemap text-4xl text-sky-600"></i>
-                    <h1 class="text-3xl font-bold text-slate-800 mt-2">HR Management</h1>
-                    <p class="text-slate-500">Welcome back! Please login to your account.</p>
+// Make sure you have Font Awesome linked in your main public/index.html file
+// <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" ... />
+
+const LoginPage = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleLogin = () => {
+        // Your login logic will go here
+        console.log('Logging in with:', { email, password });
+    };
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4 font-sans">
+            <div className="w-full max-w-md">
+                {/* Header Section */}
+                <div className="text-center mb-8">
+                    <i className="fas fa-sitemap text-4xl text-sky-600"></i>
+                    <h1 className="text-3xl font-bold text-slate-800 mt-2">HR Management</h1>
+                    <p className="text-slate-500">Welcome back! Please login to your account.</p>
                 </div>
-                <div class="bg-white p-8 rounded-xl shadow-lg">
-                    <div class="space-y-6">
+
+                {/* Login Form Card */}
+                <div className="bg-white p-8 rounded-xl shadow-lg">
+                    <div className="space-y-6">
+                        {/* Email Input */}
                         <div>
-                            <label for="email" class="text-sm font-medium text-slate-600">Email Address</label>
-                            <input type="email" id="email" class="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" placeholder="you@company.com" value="admin@company.com" />
+                            <label htmlFor="email" className="text-sm font-medium text-slate-600 block mb-1">
+                                Email Address
+                            </label>
+                            <InputText
+                                id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                className="w-full p-3 bg-slate-50 border-slate-200" // Base styling
+                                placeholder="you@company.com"
+                            />
                         </div>
+
+                        {/* Password Input */}
                         <div>
-                            <label for="password" class="text-sm font-medium text-slate-600">Password</label>
-                            <input type="password" id="password" class="mt-1 w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500" value="************" />
+                            <label htmlFor="password" className="text-sm font-medium text-slate-600 block mb-1">
+                                Password
+                            </label>
+                            <Password
+                                inputId="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className="w-full" // The component nests the input, so style the input with inputClassName
+                                inputClassName="w-full p-3 bg-slate-50 border-slate-200"
+                                placeholder="************"
+                                feedback={false} // Hides the password strength meter
+                                toggleMask // Adds the show/hide password icon
+                            />
                         </div>
                     </div>
-                    <div class="flex items-center justify-between mt-6">
-                        <a href="#" class="text-sm text-sky-600 hover:underline">Forgot Password?</a>
+
+                    {/* Forgot Password Link */}
+                    <div className="flex items-center justify-end mt-4">
+                        <a href="#" className="text-sm text-sky-600 hover:underline">
+                            Forgot Password?
+                        </a>
                     </div>
-                       <Button label="Login" className="w-full mt-6" /> 
+
+                    {/* Login Button */}
+                    <Button
+                        label="Login"
+                        onClick={handleLogin}
+                        className="w-full mt-6 bg-sky-600 border-sky-600 hover:bg-sky-700 hover:border-sky-700"
+                    />
                 </div>
             </div>
         </div>
-    </div>
-  return (
-    <div>
-      <h2>Login Page</h2>
-      <Button label="Login" />
-    </div>
-  );
-}
+    );
+};
 
 export default LoginPage;
