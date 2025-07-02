@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
+import LeaveManagementPage from './pages/LeaveManagementPage';
+import Reports from './pages/ReportsPage';
+import Settings from './pages/Settings';
+import Logout from './pages/Logout';
 import './App.css'
 
 function App() {
@@ -10,11 +15,12 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/leave-management" element={<LeaveManagementPage />} />
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/leave" element={<div>Leave Management</div>} />
-        <Route path="/reports" element={<div>Reports</div>} />
-        <Route path="/settings" element={<div>Settings</div>} />
-        <Route path="/logout" element={<div>Logout</div>} />
+        <Route path="/reports" element={<Reports/>} />
+        <Route path="/settings" element={<Settings/>} />
+        <Route path="/logout" element={<Logout/>} />
         <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </BrowserRouter>

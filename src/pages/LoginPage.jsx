@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
@@ -9,10 +10,14 @@ import { Password } from 'primereact/password';
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = () => {
-        // Your login logic will go here
-        console.log('Logging in with:', { email, password });
+        // TODO: Replace with real API call in the future
+        // Simulate async login
+        setTimeout(() => {
+            navigate('/dashboard');
+        }, 500);
     };
 
     return (
@@ -26,7 +31,7 @@ const LoginPage = () => {
                 </div>
 
                 {/* Login Form Card */}
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">
+                <div className="bg-red p-8 rounded-xl shadow-lg border border-slate-100">
                     <div className="space-y-6">
                         {/* Email Input */}
                         <div>
