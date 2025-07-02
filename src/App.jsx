@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import Employees from './pages/EmployeesPage';
 import LeaveManagementPage from './pages/LeaveManagementPage';
 import Reports from './pages/ReportsPage';
 import Settings from './pages/Settings';
@@ -18,6 +19,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/employees" element={<Employees/>} />
           <Route path="/leave" element={<LeaveManagementPage />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />

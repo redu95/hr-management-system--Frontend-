@@ -1,6 +1,7 @@
 // src/components/layout/Sidebar.jsx
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import guestHomeLogo from '../../assets/guesthome.svg'; // Import the SVG
 
 const Sidebar = () => {
     // This function is used by NavLink to apply active styles
@@ -13,14 +14,14 @@ const Sidebar = () => {
     return (
         <aside className="w-64 bg-white shadow-md flex-col hidden lg:flex">
             {/* Logo/Header */}
-            <div className="p-6 text-center border-b">
-                <i className="fas fa-sitemap text-3xl text-sky-600"></i>
-                <h1 className="text-2xl font-bold text-slate-800 mt-2">HRM</h1>
+            <div className="p-8 text-center border-b min-h-[120px] flex flex-col items-center justify-center">
+                <img src={guestHomeLogo} alt="Guest Home Logo" className="w-16 h-16 mx-auto mb-2" />
+                <span className="text-base font-semibold text-slate-500 mt-2 inline-block">HRMS</span>
             </div>
 
             {/* Navigation Links */}
-            <nav className="flex-1 px-4 py-6 space-y-2">
-                <NavLink to="/" className={getNavLinkClass}>
+            <nav className="bg-purple-100 flex-1 px-4 py-6 space-y-2">
+                <NavLink to="/dashboard" className={getNavLinkClass}>
                     <i className="w-6 text-center fas fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </NavLink>
@@ -43,7 +44,7 @@ const Sidebar = () => {
             </nav>
 
             {/* Logout Section */}
-            <div className="px-4 py-6 border-t">
+            <div className="bg-purple-100 px-4 py-6 border-t">
                 <NavLink to="/login" className="flex items-center space-x-3 p-3 rounded-lg text-slate-600 hover:bg-slate-100">
                     <i className="w-6 text-center fas fa-sign-out-alt"></i>
                     <span>Logout</span>
@@ -54,3 +55,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
