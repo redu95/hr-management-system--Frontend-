@@ -31,8 +31,7 @@ const LoginPage = () => {
                     <p className="text-slate-500">Welcome back! Please login to your account.</p>
                 </div>
 
-                {/* Test Tailwind CSS */}
-                <TestTailwind />
+        
 
                 {/* Login Form Card */}
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">
