@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
+import TestTailwind from '../TestTailwind';
 
 // Make sure you have Font Awesome linked in your main public/index.html file
 // <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" ... />
@@ -30,8 +31,11 @@ const LoginPage = () => {
                     <p className="text-slate-500">Welcome back! Please login to your account.</p>
                 </div>
 
+                {/* Test Tailwind CSS */}
+                <TestTailwind />
+
                 {/* Login Form Card */}
-                <div className="bg-red p-8 rounded-xl shadow-lg border border-slate-100">
+                <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">
                     <div className="space-y-6">
                         {/* Email Input */}
                         <div>
@@ -42,7 +46,8 @@ const LoginPage = () => {
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full p-3 bg-slate-50 border-slate-200" // Base styling
+                                className="w-full" // wrapper
+                                inputClassName="p-3 bg-slate-50 border-slate-200 rounded-lg" // input itself
                                 placeholder="you@company.com"
                             />
                         </div>
@@ -56,8 +61,8 @@ const LoginPage = () => {
                                 inputId="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full" // The component nests the input, so style the input with inputClassName
-                                inputClassName="w-full p-3 bg-slate-50 border-slate-200"
+                                className="w-full"
+                                inputClassName="p-3 bg-slate-50 border-slate-200 rounded-lg"
                                 placeholder="************"
                                 feedback={false} // Hides the password strength meter
                                 toggleMask // Adds the show/hide password icon
