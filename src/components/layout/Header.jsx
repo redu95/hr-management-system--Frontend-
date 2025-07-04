@@ -2,32 +2,34 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
+import { Button } from 'primereact/button';
 
-const Header = () => {
+const Header = ({ onMenuClick }) => { // Accept onMenuClick prop
     const location = useLocation();
 
-    // Function to generate a user-friendly title from the URL pathname
     const getPageTitle = (pathname) => {
         if (pathname === '/') return 'Dashboard';
-        
-        // Takes a path like "/employees" and turns it into "Employees"
         const title = pathname.replace('/', '').charAt(0).toUpperCase() + pathname.slice(2);
-        return title.replace('Mgt', 'Management'); // Handle abbreviations
+        return title.replace('Mgt', 'Management');
     };
 
     const pageTitle = getPageTitle(location.pathname);
 
     return (
-        <header className="bg-purple-100 shadow-sm px-4 py-6 flex justify-between items-center min-h-[80px]">
-            {/* Page Title */}
-            <h2 className="text-2xl font-bold text-slate-800 hidden md:block">
-                {pageTitle}
-            </h2>
+        <header className="bg-purple-400 shadow-sm p-4 flex justify-between items-center">
+            <div className="flex items-center gap-4">
+                {/* Hamburger Menu Button - visible only on small screens */}
+                <Button 
+                    icon="pi pi-bars" 
+                    className="p-button-rounded p-button-text lg:hidden" 
+                    onClick={onMenuClick} 
+                />
+                <h2 className="text-2xl font-bold text-slate-800 hidden md:block">
+                    {pageTitle}
+                </h2>
+            </div>
 
-            {/* Spacer for mobile */}
-            <div className="md:hidden"></div>
-
-            {/* Right-side controls */}
+           {/* Right-side controls */}
             <div className="flex items-center space-x-4 sm:space-x-6">
                 {/* Search Bar */}
                 <span className="relative hidden sm:inline-flex">
