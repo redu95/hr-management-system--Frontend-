@@ -30,7 +30,7 @@ const LoginPage = () => {
                 })
             });
             if (!response.ok) {
-                let errorMsg = 'Invalid credentials. No account found with the entered email and password.';
+                // let errorMsg = 'Invalid credentials. No account found with the entered email and password.';
                 try {
                     const errorData = await response.json();
                     // Django returns { detail: "No active account found with the given credentials" }
