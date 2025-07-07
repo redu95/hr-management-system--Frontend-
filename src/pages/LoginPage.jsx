@@ -30,15 +30,24 @@ const LoginPage = () => {
                 })
             });
             if (!response.ok) {
-                // let errorMsg = 'Invalid credentials. No account found with the entered email and password.';
+                let errorMsg = 'Login failed'; // Default fallback
                 try {
                     const errorData = await response.json();
-                    // Django returns { detail: "No active account found with the given credentials" }
-                    if (errorData && errorData.detail) {
+                    // If backend returns errors object, combine all messages
+                    if (errorData && errorData.errors) {
+                        // Flatten all error arrays into a single array, then join
+                        errorMsg = Object.values(errorData.errors)
+                            .flat()
+                            .join(' ');
+                    } else if (errorData && errorData.detail) {
                         errorMsg = errorData.detail;
+                    } else if (typeof errorData === 'string') {
+                        errorMsg = errorData;
+                    } else if (errorData && errorData.message) {
+                        errorMsg = errorData.message;
                     }
-                } catch {
-                    // ignore JSON parse errors
+                } catch (e) {
+                    // ignore JSON parse errors, keep fallback errorMsg
                 }
                 // Show error toast
                 toast.current.show({
