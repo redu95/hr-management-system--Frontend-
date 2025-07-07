@@ -11,7 +11,7 @@ import { memoryToken } from '../components/common/RequireAuth';
 // <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" ... />
 
 const LoginPage = () => {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
     const toast = useRef(null); // Toast ref
@@ -25,7 +25,7 @@ const LoginPage = () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    username: email,
+                    username: username,
                     password: password
                 })
             });
@@ -97,18 +97,18 @@ const LoginPage = () => {
                 {/* Login Form Card */}
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">
                     <div className="space-y-6">
-                        {/* Email Input */}
+                        {/* Username Input */}
                         <div>
-                            <label htmlFor="email" className="text-sm font-medium text-slate-600 block mb-1">
-                                Email Address
+                            <label htmlFor="username" className="text-sm font-medium text-slate-600 block mb-1">
+                                Username
                             </label>
                             <InputText
-                                id="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                id="username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
                                 className="w-full" // wrapper
                                 inputClassName="p-3 bg-slate-50 border-slate-200 rounded-lg" // input itself
-                                placeholder="you@company.com"
+                                placeholder="your username"
                             />
                         </div>
 
