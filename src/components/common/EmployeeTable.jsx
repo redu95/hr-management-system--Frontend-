@@ -8,35 +8,35 @@ import { Button } from 'primereact/button';
 const employees = [
     { 
         id: 'EMP-001', 
-        name: 'Eva Elfie', 
-        title: 'Digital Marketing Lead', 
-        department: 'Marketing', 
-        email: 'eva.e@company.com',
-        avatar: 'E'
+        name: 'Minasie Lemma', 
+        title: 'Chief Technology Officer(CTO)', 
+        department: 'Technology', 
+        email: 'minasie.e@company.com',
+        avatar: 'M'
     },
     { 
         id: 'EMP-002', 
-        name: 'Jane Doe', 
-        title: 'Finance Manager', 
-        department: 'Finance', 
-        email: 'jane.d@company.com',
-        avatar: 'J'
+        name: 'Naol Lemma', 
+        title: 'Chief Executive Officer(CEO)', 
+        department: 'Management', 
+        email: 'naol.d@company.com',
+        avatar: 'N'
     },
     { 
         id: 'EMP-003', 
-        name: 'John Smith', 
-        title: 'Senior Developer', 
-        department: 'Technology', 
-        email: 'john.s@company.com',
-        avatar: 'J'
+        name: 'Eleni Lemma', 
+        title: 'Human Resource Manager(HR)', 
+        department: 'Human Resources', 
+        email: 'eleni.s@company.com',
+        avatar: 'E'
     },
     { 
         id: 'EMP-004', 
-        name: 'Mia Khalifa', 
-        title: 'Customer Support Rep', 
-        department: 'Customer Support', 
-        email: 'mia.k@company.com',
-        avatar: 'M'
+        name: 'Yididya Lemma', 
+        title: 'Frontend Developer', 
+        department: 'Technology', 
+        email: 'yididya.k@company.com',
+        avatar: 'Y'
     },
 ];
 

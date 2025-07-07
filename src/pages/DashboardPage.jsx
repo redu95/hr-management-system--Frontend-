@@ -1,23 +1,88 @@
 // src/pages/DashboardPage.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
+// Import Chart.js components
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 
-// Placeholder for the chart component
+// Register the components you will use
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+// --- Chart Component ---
 const HeadcountChart = () => {
-    return (
-        <div className="bg-slate-50 p-4 rounded-lg h-full flex items-center justify-center">
-            <p className="text-slate-400 font-medium">[Bar Chart Placeholder]</p>
-        </div>
-    );
+    // Chart options
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false, // Important to allow custom height
+        plugins: {
+            legend: {
+                display: false, // We don't need a legend for a single dataset
+            },
+            title: {
+                display: false, // The title is already in the card header
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: '#e2e8f0', // slate-200
+                },
+                ticks: {
+                    color: '#64748b', // slate-500
+                }
+            },
+            x: {
+                grid: {
+                    display: false,
+                },
+                ticks: {
+                    color: '#64748b', // slate-500
+                }
+            }
+        }
+    };
+
+    // Dummy data for the chart
+    const data = {
+        labels: ['Marketing', 'Finance', 'Technology', 'Customer Support', 'Sales'],
+        datasets: [
+            {
+                label: 'Headcount',
+                data: [45, 30, 85, 60, 55],
+                backgroundColor: 'rgba(14, 165, 233, 0.6)', // sky-500 with opacity
+                borderColor: 'rgba(14, 165, 233, 1)',
+                borderWidth: 1,
+                borderRadius: 5,
+            },
+        ],
+    };
+
+    return <Bar options={options} data={data} />;
 };
 
 // Reusable component for the list of recent hires
 const RecentHiresList = () => {
     const hires = [
-        { name: 'Lana Rhoades', title: 'Sales Executive', avatar: 'L' },
-        { name: 'John Sins', title: 'Customer Support', avatar: 'J' },
-        { name: 'Dani Daniels', title: 'Finance Analyst', avatar: 'D' },
-        { name: 'Eva Elfie', title: 'Marketing Intern', avatar: 'E' },
+        { name: 'Minase Lemma', title: 'CTO(Chief Technology Officer)', avatar: 'M' },
+        { name: 'Naol Lemma', title: 'CEO(Chief Executive Officer)', avatar: 'N' },
+        { name: 'Eleni Lemma', title: 'HR (Human Resource)', avatar: 'E' },
+        { name: 'Yididya Lemma', title: 'Frontend Developer', avatar: 'Y' },
     ];
 
     return (
