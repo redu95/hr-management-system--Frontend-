@@ -13,7 +13,7 @@ const NavigationLinks = ({ onLinkClick }) => {
     return (
         <>
             <nav className="flex-1 px-4 py-6 space-y-2">
-                <NavLink to="/" className={getNavLinkClass} onClick={onLinkClick}>
+                <NavLink to="/dashboard" className={getNavLinkClass} onClick={onLinkClick}>
                     <i className="pi pi-th-large w-6 text-center text-lg"></i>
                     <span>Dashboard</span>
                 </NavLink>
