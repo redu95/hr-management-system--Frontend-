@@ -84,37 +84,37 @@ const LoginPage = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white p-4 font-sans">
+        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-900 p-4 font-sans transition-colors duration-300">
             <Toast ref={toast} position="top-center" />
             <div className="w-full max-w-md">
                 {/* Header Section */}
                 <div className="text-center mb-8">
                     <i className="fas fa-sitemap text-4xl text-sky-600"></i>
-                    <h1 className="text-3xl font-bold text-slate-800 mt-2">HR Management</h1>
-                    <p className="text-slate-500">Welcome back! Please login to your account.</p>
+                    <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 mt-2">HR Management</h1>
+                    <p className="text-slate-500 dark:text-slate-300">Welcome back! Please login to your account.</p>
                 </div>
 
                 {/* Login Form Card */}
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">
+                <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 transition-colors duration-300">
                     <div className="space-y-6">
                         {/* Username Input */}
                         <div>
-                            <label htmlFor="username" className="text-sm font-medium text-slate-600 block mb-1">
+                            <label htmlFor="username" className="text-sm font-medium text-slate-600 dark:text-slate-200 block mb-1">
                                 Username
                             </label>
                             <InputText
                                 id="username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="w-full" // wrapper
-                                inputClassName="p-3 bg-slate-50 border-slate-200 rounded-lg" // input itself
+                                className="w-full"
+                                inputClassName="p-3 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 rounded-lg dark:text-slate-100"
                                 placeholder="your username"
                             />
                         </div>
 
                         {/* Password Input */}
                         <div>
-                            <label htmlFor="password" className="text-sm font-medium text-slate-600 block mb-1">
+                            <label htmlFor="password" className="text-sm font-medium text-slate-600 dark:text-slate-200 block mb-1">
                                 Password
                             </label>
                             <Password
@@ -122,7 +122,7 @@ const LoginPage = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full"
-                                inputClassName="p-3 bg-slate-50 border-slate-200 rounded-lg"
+                                inputClassName="p-3 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 rounded-lg dark:text-slate-100"
                                 placeholder="************"
                                 feedback={false} // Hides the password strength meter
                                 toggleMask // Adds the show/hide password icon
@@ -132,7 +132,7 @@ const LoginPage = () => {
 
                     {/* Forgot Password Link */}
                     <div className="flex items-center justify-end mt-4">
-                        <a href="#" className="text-sm text-sky-600 hover:underline">
+                        <a href="#" className="text-sm text-sky-600 hover:underline dark:text-sky-400">
                             Forgot Password?
                         </a>
                     </div>

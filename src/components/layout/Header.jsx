@@ -17,7 +17,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => { // Accept darkMode 
     const pageTitle = getPageTitle(location.pathname);
 
     return (
-        <header className="bg-purple-400 shadow-sm p-4 flex justify-between items-center">
+        <header className="shadow-sm p-4 flex justify-between items-center bg-[#8d64fa] dark:bg-[#8d64fa] transition-colors duration-300">
             <div className="flex items-center gap-4">
                 {/* Hamburger Menu Button - visible only on small screens */}
                 <Button 
@@ -25,7 +25,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => { // Accept darkMode 
                     className="p-button-rounded p-button-text lg:hidden" 
                     onClick={onMenuClick} 
                 />
-                <h2 className="text-2xl font-bold text-slate-800 hidden md:block">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 hidden md:block">
                     {pageTitle}
                 </h2>
             </div>
@@ -36,19 +36,19 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => { // Accept darkMode 
                 <span className="relative hidden sm:inline-flex">
                     <InputText
                         placeholder="Search..."
-                        className="w-72 md:w-96 p-inputtext-lg p-3"
+                        className="w-72 md:w-96 p-inputtext-lg p-3 dark:bg-slate-700 dark:text-slate-100"
                     />
-                    <i className="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none ml-2" />
+                    <i className="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-300 text-lg pointer-events-none ml-2" />
                 </span>
 
                 {/* Dark/Light Mode Switch */}
                 <div className="flex items-center space-x-2">
-                    <i className={`pi ${darkMode ? 'pi-moon' : 'pi-sun'} text-xl`} />
+                    <i className={`pi ${darkMode ? 'pi-moon' : 'pi-sun'} text-xl dark:text-slate-100`} />
                     <InputSwitch checked={darkMode} onChange={e => setDarkMode(e.value)} tooltip={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"} />
                 </div>
 
                 {/* Notification Icon */}
-                <i className="pi pi-bell p-text-secondary text-xl cursor-pointer" />
+                <i className="pi pi-bell p-text-secondary text-xl cursor-pointer dark:text-slate-100" />
 
                 {/* User Profile */}
                 <div className="flex items-center space-x-3 cursor-pointer">
@@ -60,8 +60,8 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => { // Accept darkMode 
                     />
                     <div className="hidden md:block">
                         {/* This data will eventually come from your Zustand store */}
-                        <p className="font-semibold text-sm">Alex Turner</p>
-                        <p className="text-xs text-slate-500">Administrator</p>
+                        <p className="font-semibold text-sm dark:text-slate-100">Alex Turner</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-300">Administrator</p>
                     </div>
                 </div>
             </div>

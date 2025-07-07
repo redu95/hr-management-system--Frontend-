@@ -73,7 +73,11 @@ const HeadcountChart = () => {
         ],
     };
 
-    return <Bar options={options} data={data} />;
+    return (
+        <div className="h-full bg-white dark:bg-slate-800 rounded-xl transition-colors duration-300 p-2">
+            <Bar options={options} data={data} />
+        </div>
+    );
 };
 
 // Reusable component for the list of recent hires
@@ -86,17 +90,17 @@ const RecentHiresList = () => {
     ];
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-lg h-full">
-            <h3 className="text-lg font-semibold text-slate-800">Recent Hires</h3>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg h-full transition-colors duration-300">
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Recent Hires</h3>
             <ul className="mt-4 space-y-4">
                 {hires.map((hire, index) => (
                     <li key={index} className="flex items-center space-x-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-100 flex items-center justify-center font-bold">
                            {hire.avatar}
                         </div>
                         <div>
-                            <p className="font-semibold text-slate-700">{hire.name}</p>
-                            <p className="text-sm text-slate-500">{hire.title}</p>
+                            <p className="font-semibold text-slate-700 dark:text-slate-100">{hire.name}</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-300">{hire.title}</p>
                         </div>
                     </li>
                 ))}
@@ -108,22 +112,22 @@ const RecentHiresList = () => {
 // UPDATED KpiCard component with PrimeIcons
 const KpiCard = ({ icon, title, value, color, index }) => {
     const colors = {
-        sky: 'text-sky-500 bg-sky-100',
-        amber: 'text-amber-500 bg-amber-100',
-        rose: 'text-rose-500 bg-rose-100',
-        green: 'text-green-500 bg-green-100',
+        sky: 'text-sky-500 bg-sky-100 dark:bg-sky-900',
+        amber: 'text-amber-500 bg-amber-100 dark:bg-amber-900',
+        rose: 'text-rose-500 bg-rose-100 dark:bg-rose-900',
+        green: 'text-green-500 bg-green-100 dark:bg-green-900',
     };
 
     return (
         <motion.div
-            className="bg-white p-6 rounded-xl shadow-lg"
+            className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg transition-colors duration-300"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
         >
             <i className={`pi ${icon} text-2xl p-3 rounded-full ${colors[color]}`}></i>
-            <p className="text-3xl font-bold mt-4 text-slate-800">{value}</p>
-            <p className="text-slate-500">{title}</p>
+            <p className="text-3xl font-bold mt-4 text-slate-800 dark:text-slate-100">{value}</p>
+            <p className="text-slate-500 dark:text-slate-300">{title}</p>
         </motion.div>
     );
 };
@@ -152,8 +156,8 @@ const DashboardPage = () => {
                 ))}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-                <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
-                    <h3 className="text-lg font-semibold text-slate-800">Headcount by Department</h3>
+                <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg transition-colors duration-300">
+                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Headcount by Department</h3>
                     <div className="h-80 mt-4">
                        <HeadcountChart />
                     </div>

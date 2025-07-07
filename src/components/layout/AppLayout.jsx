@@ -10,10 +10,10 @@ import guestHomeLogo from '../../assets/guesthome.svg'; // Import the SVG
 // This is the static sidebar for desktop view
 const DesktopSidebar = () => {
     return (
-        <aside className="w-64 bg-white shadow-md flex-col hidden lg:flex">
-            <div className="p-6 text-center border-b">
+        <aside className="w-64 bg-white dark:bg-slate-800 shadow-md flex-col hidden lg:flex">
+            <div className="p-6 text-center border-b border-slate-100 dark:border-slate-700">
                 <img src={guestHomeLogo} alt="Guest Home Logo" className="w-16 h-16 mx-auto mb-2" />
-                <span className="text-base font-semibold text-slate-500 mt-2 inline-block">HRMS</span>
+                <span className="text-base font-semibold text-slate-500 dark:text-slate-300 mt-2 inline-block">HRMS</span>
             </div>
             <NavigationLinks />
         </aside>
@@ -54,13 +54,13 @@ const AppLayout = () => {
                 onHide={() => setMobileSidebarVisible(false)} 
             />
 
-            <main className="flex-1 flex flex-col overflow-hidden">
+            <main className="flex-1 flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
                 <Header 
                     onMenuClick={() => setMobileSidebarVisible(true)} 
                     darkMode={darkMode}
                     setDarkMode={setDarkMode}
                 />
-                <div className="flex-1 overflow-y-auto">
+                <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
                     <Outlet />
                 </div>
             </main>
