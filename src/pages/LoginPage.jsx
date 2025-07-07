@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { InputText } from 'primereact/inputtext';
 import { Password } from 'primereact/password';
+import { Toast } from 'primereact/toast'; // Import Toast
 import TestTailwind from '../TestTailwind';
+import { memoryToken } from '../components/common/RequireAuth';
 
 // Make sure you have Font Awesome linked in your main public/index.html file
 // <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" ... />
@@ -12,6 +14,7 @@ const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+    const toast = useRef(null); // Toast ref
 
     const handleLogin = async () => {
         try {
@@ -37,24 +40,43 @@ const LoginPage = () => {
                 } catch {
                     // ignore JSON parse errors
                 }
-                throw new Error(errorMsg);
+                // Show error toast
+                toast.current.show({
+                    severity: 'error',
+                    summary: 'Login Failed',
+                    detail: errorMsg,
+                    life: 4000
+                });
+                return;
             }
             const data = await response.json();
             // Store tokens (you can use Zustand or context later)
             localStorage.setItem('accessToken', data.access);
             localStorage.setItem('refreshToken', data.refresh);
-            navigate('/dashboard');
+            memoryToken.value = data.access; // Set in-memory token
+            toast.current.show({
+                severity: 'success',
+                summary: 'Login Successful',
+                detail: 'Welcome back!',
+                life: 2000
+            });
             setTimeout(() => {
-                alert('Login successful!');
-            }, 100); // Delay to ensure navigation
+                navigate('/dashboard');
+            }, 1200); // Wait before navigating so toast is visible
         } catch (error) {
             console.error('Login error:', error);
-            alert(error.message || 'Login failed');
+            toast.current.show({
+                severity: 'error',
+                summary: 'Login Error',
+                detail: error.message || 'Login failed',
+                life: 4000
+            });
         }
     };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-white p-4 font-sans">
+            <Toast ref={toast} position="top-center" />
             <div className="w-full max-w-md">
                 {/* Header Section */}
                 <div className="text-center mb-8">
@@ -62,8 +84,6 @@ const LoginPage = () => {
                     <h1 className="text-3xl font-bold text-slate-800 mt-2">HR Management</h1>
                     <p className="text-slate-500">Welcome back! Please login to your account.</p>
                 </div>
-
-        
 
                 {/* Login Form Card */}
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">

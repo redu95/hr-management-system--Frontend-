@@ -33,7 +33,7 @@ const NavigationLinks = ({ onLinkClick }) => {
                 </NavLink>
             </nav>
             <div className="px-4 py-6 border-t">
-                <NavLink to="/login" className="flex items-center space-x-3 p-3 rounded-lg text-slate-600 hover:bg-slate-100" onClick={onLinkClick}>
+                <NavLink to="/logout" className="flex items-center space-x-3 p-3 rounded-lg text-slate-600 hover:bg-slate-100" onClick={onLinkClick}>
                     <i className="w-6 text-center fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </NavLink>
