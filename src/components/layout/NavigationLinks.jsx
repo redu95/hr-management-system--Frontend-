@@ -35,7 +35,7 @@ const NavigationLinks = ({ onLinkClick }) => {
                 </NavLink>
             </nav>
             <div className="px-4 py-6 border-t">
-                <NavLink to="/login" className="flex items-center space-x-4 p-3 rounded-lg text-slate-700 hover:bg-slate-100 font-medium" onClick={onLinkClick}>
+                <NavLink to="/logout" className="flex items-center space-x-4 p-3 rounded-lg text-slate-700 hover:bg-slate-100 font-medium" onClick={onLinkClick}>
                     <i className="pi pi-sign-out w-6 text-center text-lg"></i>
                     <span>Logout</span>
                 </NavLink>
