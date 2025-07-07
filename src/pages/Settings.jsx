@@ -23,6 +23,25 @@ const SettingsPage = () => {
                 <p className="text-sm text-slate-500 mt-1">Manage your profile, notifications, and company settings.</p>
             </div>
 
+            {/* User's Leave Balance Section */}
+            <div className="bg-white p-6 rounded-xl shadow-lg mb-6">
+                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Your Leave Balance</h3>
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div className="bg-sky-50 p-4 rounded-lg">
+                        <p className="text-2xl font-bold text-sky-700">14</p>
+                        <p className="text-sm font-medium text-slate-600">Vacation Days Left</p>
+                    </div>
+                    <div className="bg-amber-50 p-4 rounded-lg">
+                        <p className="text-2xl font-bold text-amber-700">8</p>
+                        <p className="text-sm font-medium text-slate-600">Sick Days Left</p>
+                    </div>
+                    <div className="bg-emerald-50 p-4 rounded-lg">
+                        <p className="text-2xl font-bold text-emerald-700">2</p>
+                        <p className="text-sm font-medium text-slate-600">Personal Days Left</p>
+                    </div>
+                 </div>
+            </div>
+
             {/* Tabbed View for Settings */}
             <div className="bg-white p-2 sm:p-4 rounded-xl shadow-lg">
                 <TabView>

@@ -34,6 +34,33 @@ const pendingRequests = [
         days: 1,
         reason: 'Appointment.'
     },
+    { 
+        id: 1,
+        employee: { name: 'Eva Elfie', avatar: 'E' },
+        leaveType: 'Vacation',
+        startDate: '2025-07-10',
+        endDate: '2025-07-15',
+        days: 5,
+        reason: 'Family trip to the coast.'
+    },
+    { 
+        id: 2,
+        employee: { name: 'John Smith', avatar: 'J' },
+        leaveType: 'Sick Leave',
+        startDate: '2025-07-02',
+        endDate: '2025-07-02',
+        days: 1,
+        reason: 'Feeling unwell.'
+    },
+    { 
+        id: 3,
+        employee: { name: 'Mia Khalifa', avatar: 'M' },
+        leaveType: 'Personal',
+        startDate: '2025-07-08',
+        endDate: '2025-07-08',
+        days: 1,
+        reason: 'Appointment.'
+    },
 ];
 
 const LeaveManagementPage = () => {
@@ -98,24 +125,6 @@ const LeaveManagementPage = () => {
                 </DataTable>
             </div>
 
-            {/* User's Leave Balance Section */}
-            <div className="bg-white p-6 rounded-xl shadow-lg">
-                 <h3 className="text-lg font-semibold text-slate-800 mb-4">Your Leave Balance</h3>
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div className="bg-sky-50 p-4 rounded-lg">
-                        <p className="text-2xl font-bold text-sky-700">14</p>
-                        <p className="text-sm font-medium text-slate-600">Vacation Days Left</p>
-                    </div>
-                    <div className="bg-amber-50 p-4 rounded-lg">
-                        <p className="text-2xl font-bold text-amber-700">8</p>
-                        <p className="text-sm font-medium text-slate-600">Sick Days Left</p>
-                    </div>
-                    <div className="bg-emerald-50 p-4 rounded-lg">
-                        <p className="text-2xl font-bold text-emerald-700">2</p>
-                        <p className="text-sm font-medium text-slate-600">Personal Days Left</p>
-                    </div>
-                 </div>
-            </div>
         </div>
     );
 };

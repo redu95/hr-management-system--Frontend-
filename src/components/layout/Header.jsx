@@ -3,8 +3,9 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { InputSwitch } from 'primereact/inputswitch';
 
-const Header = ({ onMenuClick }) => { // Accept onMenuClick prop
+const Header = ({ onMenuClick, darkMode, setDarkMode }) => { // Accept darkMode and setDarkMode props
     const location = useLocation();
 
     const getPageTitle = (pathname) => {
@@ -35,10 +36,16 @@ const Header = ({ onMenuClick }) => { // Accept onMenuClick prop
                 <span className="relative hidden sm:inline-flex">
                     <InputText
                         placeholder="Search..."
-                        className="w-72 md:w-96 p-inputtext-lg pr-10"
+                        className="w-72 md:w-96 p-inputtext-lg p-3"
                     />
-                    <i className="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none" />
+                    <i className="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none ml-2" />
                 </span>
+
+                {/* Dark/Light Mode Switch */}
+                <div className="flex items-center space-x-2">
+                    <i className={`pi ${darkMode ? 'pi-moon' : 'pi-sun'} text-xl`} />
+                    <InputSwitch checked={darkMode} onChange={e => setDarkMode(e.value)} tooltip={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"} />
+                </div>
 
                 {/* Notification Icon */}
                 <i className="pi pi-bell p-text-secondary text-xl cursor-pointer" />

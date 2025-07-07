@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Optional: dark mode overrides for backgrounds and text */
+body.dark,
+html.dark {
+  @apply bg-slate-900 text-slate-100;
+}

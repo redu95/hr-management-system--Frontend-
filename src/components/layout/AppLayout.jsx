@@ -1,5 +1,5 @@
 // src/components/layout/AppLayout.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import MobileSidebar from './MobileSidebar';
@@ -23,9 +23,28 @@ const DesktopSidebar = () => {
 
 const AppLayout = () => {
     const [mobileSidebarVisible, setMobileSidebarVisible] = useState(false);
+    const [darkMode, setDarkMode] = useState(() => {
+        // Check localStorage or system preference
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('theme');
+            if (stored) return stored === 'dark';
+            return window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        return false;
+    });
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [darkMode]);
 
     return (
-        <div className="flex h-screen bg-slate-50">
+        <div className="flex h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
             {/* Renders the static sidebar for large screens */}
             <DesktopSidebar />
 
@@ -36,7 +55,11 @@ const AppLayout = () => {
             />
 
             <main className="flex-1 flex flex-col overflow-hidden">
-                <Header onMenuClick={() => setMobileSidebarVisible(true)} />
+                <Header 
+                    onMenuClick={() => setMobileSidebarVisible(true)} 
+                    darkMode={darkMode}
+                    setDarkMode={setDarkMode}
+                />
                 <div className="flex-1 overflow-y-auto">
                     <Outlet />
                 </div>
