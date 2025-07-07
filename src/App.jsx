@@ -9,6 +9,7 @@ import Settings from './pages/Settings';
 import Logout from './pages/Logout';
 import AppLayout from './components/layout/AppLayout'; 
 import './App.css'
+import RequireAuth from './components/common/RequireAuth';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -17,7 +18,11 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route element={<AppLayout />}>
+        <Route element={
+          <RequireAuth>
+            <AppLayout />
+          </RequireAuth>
+        }>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/employees" element={<Employees/>} />
           <Route path="/leave" element={<LeaveManagementPage />} />

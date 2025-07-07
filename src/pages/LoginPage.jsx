@@ -13,12 +13,44 @@ const LoginPage = () => {
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
 
-    const handleLogin = () => {
-        // TODO: Replace with real API call in the future
-        // Simulate async login
-        setTimeout(() => {
+    const handleLogin = async () => {
+        try {
+            console.log(`${import.meta.env.VITE_BASE_URL}/api/auth/token/}`);
+            const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/token/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: email,
+                    password: password
+                })
+            });
+            if (!response.ok) {
+                let errorMsg = 'Invalid credentials. No account found with the entered email and password.';
+                try {
+                    const errorData = await response.json();
+                    // Django returns { detail: "No active account found with the given credentials" }
+                    if (errorData && errorData.detail) {
+                        errorMsg = errorData.detail;
+                    }
+                } catch {
+                    // ignore JSON parse errors
+                }
+                throw new Error(errorMsg);
+            }
+            const data = await response.json();
+            // Store tokens (you can use Zustand or context later)
+            localStorage.setItem('accessToken', data.access);
+            localStorage.setItem('refreshToken', data.refresh);
             navigate('/dashboard');
-        }, 500);
+            setTimeout(() => {
+                alert('Login successful!');
+            }, 100); // Delay to ensure navigation
+        } catch (error) {
+            console.error('Login error:', error);
+            alert(error.message || 'Login failed');
+        }
     };
 
     return (
