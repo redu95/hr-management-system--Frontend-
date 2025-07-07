@@ -1,8 +1,8 @@
+// src/pages/DashboardPage.jsx
 import React from 'react';
 import { motion } from 'framer-motion';
 
-// You will need to install a charting library like Chart.js later
-// For now, this is a placeholder component.
+// Placeholder for the chart component
 const HeadcountChart = () => {
     return (
         <div className="bg-slate-50 p-4 rounded-lg h-full flex items-center justify-center">
@@ -40,8 +40,7 @@ const RecentHiresList = () => {
     );
 };
 
-
-// Reusable component for the Key Performance Indicator cards
+// UPDATED KpiCard component with PrimeIcons
 const KpiCard = ({ icon, title, value, color, index }) => {
     const colors = {
         sky: 'text-sky-500 bg-sky-100',
@@ -52,31 +51,29 @@ const KpiCard = ({ icon, title, value, color, index }) => {
 
     return (
         <motion.div
-            className="kpi-card bg-white p-6 rounded-xl shadow-lg"
+            className="bg-white p-6 rounded-xl shadow-lg"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
         >
-            <i className={`fas ${icon} text-2xl p-3 rounded-full ${colors[color]}`}></i>
+            <i className={`pi ${icon} text-2xl p-3 rounded-full ${colors[color]}`}></i>
             <p className="text-3xl font-bold mt-4 text-slate-800">{value}</p>
             <p className="text-slate-500">{title}</p>
         </motion.div>
     );
 };
 
-
-// The main Dashboard Page component
+// The main Dashboard Page component with updated icon names
 const DashboardPage = () => {
     const kpiData = [
-        { icon: 'fa-users', title: 'Total Employees', value: '248', color: 'sky' },
-        { icon: 'fa-user-clock', title: 'Employees on Leave', value: '12', color: 'amber' },
-        { icon: 'fa-inbox', title: 'Pending Requests', value: '5', color: 'rose' },
-        { icon: 'fa-user-plus', title: 'New Hires (Month)', value: '8', color: 'green' },
+        { icon: 'pi-users', title: 'Total Employees', value: '248', color: 'sky' },
+        { icon: 'pi-user-minus', title: 'Employees on Leave', value: '12', color: 'amber' },
+        { icon: 'pi-inbox', title: 'Pending Requests', value: '5', color: 'rose' },
+        { icon: 'pi-user-plus', title: 'New Hires (Month)', value: '8', color: 'green' },
     ];
 
     return (
         <div className="p-4 sm:p-8">
-            {/* KPI Cards Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {kpiData.map((item, index) => (
                     <KpiCard
@@ -89,8 +86,6 @@ const DashboardPage = () => {
                     />
                 ))}
             </div>
-
-            {/* Charts and Lists Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
                 <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
                     <h3 className="text-lg font-semibold text-slate-800">Headcount by Department</h3>
