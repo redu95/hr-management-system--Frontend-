@@ -45,7 +45,7 @@ const EmployeeTable = () => {
     // Template for the "Name" column to include avatar and ID
     const nameBodyTemplate = (rowData) => {
         return (
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3  dark:bg-slate-700">
                 <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-100 flex items-center justify-center font-bold">
                     {rowData.avatar}
                 </div>
@@ -60,7 +60,7 @@ const EmployeeTable = () => {
     // Template for the "Actions" column
     const actionBodyTemplate = (rowData) => {
         return (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2  dark:bg-slate-700">
                 <Button icon="pi pi-eye" className="p-button-rounded p-button-text p-button-info" aria-label="View" />
                 <Button icon="pi pi-pencil" className="p-button-rounded p-button-text p-button-warning" aria-label="Edit" />
             </div>

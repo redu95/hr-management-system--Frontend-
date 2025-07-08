@@ -48,7 +48,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => { // Accept darkMode 
                 </div>
 
                 {/* Notification Icon */}
-                <i className="pi pi-bell p-text-secondary text-xl cursor-pointer dark:text-slate-100" />
+                <i className="pi pi-bell p-text-secondary text-xl cursor-pointer text-slate-950 dark:text-slate-100" />
 
                 {/* User Profile */}
                 <div className="flex items-center space-x-3 cursor-pointer">
@@ -61,7 +61,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => { // Accept darkMode 
                     <div className="hidden md:block">
                         {/* This data will eventually come from your Zustand store */}
                         <p className="font-semibold text-sm dark:text-slate-100">Alex Turner</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-300">Administrator</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-300">Administrator</p>
                     </div>
                 </div>
             </div>
