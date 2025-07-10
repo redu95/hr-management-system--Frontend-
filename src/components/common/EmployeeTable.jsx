@@ -45,8 +45,8 @@ const EmployeeTable = () => {
     // Template for the "Name" column to include avatar and ID
     const nameBodyTemplate = (rowData) => {
         return (
-            <div className="flex items-center space-x-3 ">
-                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-100 flex items-center justify-center font-bold">
+            <div className="flex items-center space-x-3  ">
+                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-100 flex items-center justify-center font-bold">
                     {rowData.avatar}
                 </div>
                 <div>
@@ -61,7 +61,7 @@ const EmployeeTable = () => {
     const actionBodyTemplate = (rowData) => {
         return (
             <div className="flex items-center space-x-2">
-                <Button icon="pi pi-eye" className="p-button-rounded p-button-text p-button-info" aria-label="View" />
+                <Button icon="pi pi-eye" className="p-button-rounded p-button-text p-button-info dark:bg-slate-700  dark:text-slate-100" aria-label="View" />
                 <Button icon="pi pi-pencil" className="p-button-rounded p-button-text p-button-warning" aria-label="Edit" />
             </div>
         );
@@ -74,11 +74,11 @@ const EmployeeTable = () => {
                 responsiveLayout="scroll" 
                 className="p-datatable-customers dark:bg-slate-800 dark:text-slate-100"
             >
-                <Column header="Name" body={nameBodyTemplate} style={{ minWidth: '14rem' }} />
-                <Column field="title" header="Job Title" style={{ minWidth: '14rem' }} />
-                <Column field="department" header="Department" style={{ minWidth: '10rem' }} />
-                <Column field="email" header="Email" style={{ minWidth: '14rem' }} />
-                <Column header="Actions" body={actionBodyTemplate} style={{ minWidth: '8rem' }} />
+                <Column header="Name" className=' dark:bg-slate-700  dark:text-slate-100' body={nameBodyTemplate} style={{ minWidth: '14rem' }} />
+                <Column field="title" className=' dark:bg-slate-700  dark:text-slate-100' header="Job Title" style={{ minWidth: '14rem' }} />
+                <Column field="department" className=' dark:bg-slate-700  dark:text-slate-100' header="Department" style={{ minWidth: '10rem' }} />
+                <Column field="email" className=' dark:bg-slate-700  dark:text-slate-100' header="Email" style={{ minWidth: '14rem' }} />
+                <Column header="Actions" className=' dark:bg-slate-700  dark:text-slate-100' body={actionBodyTemplate} style={{ minWidth: '8rem' }} />
             </DataTable>
         </div>
     );

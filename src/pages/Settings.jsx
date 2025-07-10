@@ -44,7 +44,7 @@ const SettingsPage = () => {
 
             {/* Tabbed View for Settings */}
             <div className="bg-white dark:bg-slate-800 p-2 sm:p-4 rounded-xl shadow-lg transition-colors duration-300">
-                <TabView className="dark:bg-slate-800 dark:text-slate-100">
+                <TabView className="dark:bg-slate-800 dark:text-slate-100 li.p-highlight:text-slate-100">
                     {/* Profile Settings Tab */}
                     <TabPanel header="Profile" className="dark:bg-slate-800 dark:text-slate-100">
                         <div className="p-4 dark:bg-slate-800 dark:text-slate-100">

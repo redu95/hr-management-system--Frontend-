@@ -7,3 +7,35 @@ body.dark,
 html.dark {
   @apply bg-slate-900 text-slate-100;
 }
+
+/* PrimeReact DataTable dark mode header override */
+html.dark .p-datatable .p-datatable-thead > tr > th {
+  @apply bg-slate-700 text-slate-100 border-slate-600;
+}
+
+/* PrimeReact DataTable dark mode cell and row override */
+html.dark .p-datatable .p-datatable-tbody > tr > td {
+  @apply bg-slate-800 text-slate-100 border-slate-700;
+}
+html.dark .p-datatable .p-datatable-tbody > tr {
+  @apply bg-slate-800 text-slate-100;
+}
+
+/* PrimeReact TabView dark mode override */
+html.dark .p-tabview .p-tabview-nav {
+  @apply bg-slate-800 text-slate-100 border-slate-700;
+}
+html.dark .p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  @apply bg-slate-800 text-slate-100;
+}
+html.dark .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  @apply bg-slate-700 text-slate-100;
+}
+html.dark .p-tabview .p-tabview-panels {
+  @apply bg-slate-800 text-slate-100;
+}
+
+/* PrimeReact TabView light mode highlight override */
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  @apply bg-slate-200 text-slate-700;
+}

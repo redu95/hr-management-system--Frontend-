@@ -69,10 +69,10 @@ const LeaveManagementPage = () => {
     const employeeBodyTemplate = (rowData) => {
         return (
             <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold ">
+                <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold ">
                     {rowData.employee.avatar}
                 </div>
-                <span className="font-semibold text-slate-700">{rowData.employee.name}</span>
+                <span className="font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{rowData.employee.name}</span>
             </div>
         );
     };
