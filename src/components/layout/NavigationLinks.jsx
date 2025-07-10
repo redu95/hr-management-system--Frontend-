@@ -5,7 +5,7 @@ import { NavLink } from 'react-router-dom';
 const NavigationLinks = ({ onLinkClick }) => {
     const getNavLinkClass = ({ isActive }) => {
         // Updated active classes for the new design
-        const baseClasses = "flex items-center space-x-4 p-3 rounded-lg text-slate-700 hover:bg-slate-100 font-medium dark:text-slate-100";
+        const baseClasses = "flex items-center space-x-4 p-3 rounded-lg text-slate-700 hover:bg-slate-100 font-medium dark:text-slate-100 dark:hover:bg-slate-700";
         const activeClasses = "bg-sky-100 text-sky-700 dark:text-slate-100 dark:bg-sky-900";
         return isActive ? `${baseClasses} ${activeClasses}` : baseClasses;
     };
