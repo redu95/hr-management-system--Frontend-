@@ -21,6 +21,10 @@ const NavigationLinks = ({ onLinkClick }) => {
                     <i className="pi pi-users w-6 text-center text-lg dark:text-slate-100"></i>
                     <span>Employees</span>
                 </NavLink>
+                <NavLink to="/departments" className={getNavLinkClass} onClick={onLinkClick}>
+                    <i className="pi pi-briefcase w-6 text-center text-lg dark:text-slate-100"></i>
+                    <span>Departments</span>
+                </NavLink>
                 <NavLink to="/leave" className={getNavLinkClass} onClick={onLinkClick}>
                     <i className="pi pi-calendar w-6 text-center text-lg dark:text-slate-100"></i>
                     <span>Leave Mgt.</span>
