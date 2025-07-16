@@ -131,7 +131,7 @@ const EmployeeTable = () => {
 
         console.log('Final Payload Sent to API:', payload);
 
-        const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/users/${selectedEmployee.id}/`, {
+        const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/employees/${selectedEmployee.id}/`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -196,11 +196,39 @@ const EmployeeTable = () => {
     );
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-xl transition-colors duration-300">
+        <div className="bg-white pb-11 dark:bg-slate-800 rounded-xl transition-colors duration-300">
             <Toast ref={toast} />
 
             {/* View Employee Modal */}
-            <Dialog header="Employee Details" visible={showViewModal} style={{ width: '32rem' }} onHide={() => setShowViewModal(false)} modal className="dark-dialog">
+            <Dialog header="Employee Details" visible={showViewModal} style={{ width: '32rem' }} onHide={() => setShowViewModal(false)} modal pt={{
+        // Targets the main dialog container
+        root: {
+            className: 'dark:border dark:border-slate-700'
+        },
+        // Targets the header section
+        header: {
+            className: 'dark:bg-slate-800 dark:text-slate-200 dark:border-b dark:border-slate-700'
+        },
+        // Targets the actual title text
+        title: {
+            className: 'dark:text-slate-200'
+        },
+        // Targets the close button and its icon
+        closeButton: {
+            className: 'dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700'
+        },
+        closeButtonIcon: {
+            className: 'dark:text-slate-400'
+        },
+        // Targets the content area
+        content: {
+            className: 'dark:bg-slate-800 dark:text-slate-300'
+        },
+        // Targets the footer section
+        footer: {
+            className: 'dark:bg-slate-800 dark:border-t dark:border-slate-700'
+        }
+    }}>
                 {selectedEmployee && (
                     <div className="p-4 space-y-4">
                         {renderDetail('Full Name', `${selectedEmployee.first_name} ${selectedEmployee.last_name}`)}
@@ -215,20 +243,91 @@ const EmployeeTable = () => {
             </Dialog>
 
             {/* Edit Employee Modal */}
-            <Dialog header="Edit Employee" visible={showEditModal} style={{ width: '32rem' }} onHide={() => setShowEditModal(false)} modal className="dark-dialog" footer={
+            <Dialog header="Edit Employee" visible={showEditModal} style={{ width: '32rem' }} onHide={() => setShowEditModal(false)} modal pt={{
+        // Targets the main dialog container
+        root: {
+            className: 'dark:border dark:border-slate-700'
+        },
+        // Targets the header section
+        header: {
+            className: 'dark:bg-slate-800 dark:text-slate-200 dark:border-b dark:border-slate-700'
+        },
+        // Targets the actual title text
+        title: {
+            className: 'dark:text-slate-200'
+        },
+        // Targets the close button and its icon
+        closeButton: {
+            className: 'dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700'
+        },
+        closeButtonIcon: {
+            className: 'dark:text-slate-400'
+        },
+        // Targets the content area
+        content: {
+            className: 'dark:bg-slate-800 dark:text-slate-300'
+        },
+        // Targets the footer section
+        footer: {
+            className: 'dark:bg-slate-800 dark:border-t dark:border-slate-700'
+        }
+    }} footer={
                 <div className="dark:bg-slate-800 p-3 rounded-b-md">
-                    <Button label="Cancel" icon="pi pi-times" className="p-button-text dark:text-slate-300" onClick={() => setShowEditModal(false)} />
-                    <Button label="Save Changes" icon="pi pi-check" className="p-button-success" loading={editLoading} onClick={handleEditEmployee} />
+                    <Button label="Cancel" icon="pi pi-times" className=" pr-4 p-button-text dark:text-slate-300" onClick={() => setShowEditModal(false)} />
+                    <Button label="Save Changes" icon="pi pi-check" className="p-button-success  dark:text-slate-300" loading={editLoading} onClick={handleEditEmployee} />
                 </div>
-            }>
-                <div className="p-fluid space-y-4 dark:text-slate-300">
-                    <div><label>First Name</label><InputText value={editForm.first_name} onChange={e => handleEditFormChange(e, 'first_name')} /></div>
-                    <div><label>Last Name</label><InputText value={editForm.last_name} onChange={e => handleEditFormChange(e, 'last_name')} /></div>
-                    <div><label>Email</label><InputText value={editForm.email} onChange={e => handleEditFormChange(e, 'email')} /></div>
-                    <div><label>Job Title</label><InputText value={editForm.job_title} onChange={e => handleEditFormChange(e, 'job_title')} /></div>
-                    <div><label>Department</label><Dropdown value={editForm.department} options={departments} optionLabel="name" placeholder="Select Department" onChange={e => handleEditFormChange(e, 'department')} filter /></div>
-                    <div><label>Phone Number</label><InputText value={editForm.phone_number} onChange={e => handleEditFormChange(e, 'phone_number')} /></div>
-                    <div><label>Date of Birth</label><Calendar value={editForm.date_of_birth} onChange={e => handleEditFormChange(e, 'date_of_birth')} dateFormat="yy-mm-dd" showIcon /></div>
+            }
+            >
+                <div className="p-fluid space-y-4  dark:bg-slate-800 dark:text-slate-300">
+                    <div><label>First Name</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.first_name} onChange={e => handleEditFormChange(e, 'first_name')} /></div>
+                    <div><label>Last Name</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.last_name} onChange={e => handleEditFormChange(e, 'last_name')} /></div>
+                    <div><label>Email</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.email} onChange={e => handleEditFormChange(e, 'email')} /></div>
+                    <div><label>Job Title</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.job_title} onChange={e => handleEditFormChange(e, 'job_title')} /></div>
+                    <div><label>Department</label><Dropdown pt={{
+                                                                root: { className: 'dark:bg-slate-800 dark:border-slate-700' },
+                                                                input: { className: 'dark:text-slate-300' },
+                                                                trigger: { className: 'dark:bg-slate-800 dark:text-slate-400' },
+                                                                panel: { className: 'dark:bg-slate-800 dark:text-slate-300' },
+                                                                item: { className: 'dark:hover:bg-slate-700' },
+                                                                filterInput: { className: 'dark:bg-slate-700' }
+                                                            }} value={editForm.department} options={departments} optionLabel="name" placeholder="Select Department" onChange={e => handleEditFormChange(e, 'department')} filter /></div>
+                    <div><label>Phone Number</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.phone_number} onChange={e => handleEditFormChange(e, 'phone_number')} /></div>
+                    <div><label>Date of Birth</label><Calendar pt={{
+                                                                    // Input field
+                                                                    input: {
+                                                                        className: 'dark:bg-red-800 dark:text-red-300 dark:border-slate-600'
+                                                                    },
+                                                                    // The popup panel
+                                                                    panel: {
+                                                                        className: 'dark:bg-slate-700 dark:border-slate-600'
+                                                                    },
+                                                                    // Header of the popup (contains month, year, nav buttons)
+                                                                    header: {
+                                                                        className: 'dark:bg-slate-800 dark:text-slate-200'
+                                                                    },
+                                                                    // The title (e.g., "July 2025")
+                                                                    title: {
+                                                                        className: 'dark:text-slate-200'
+                                                                    },
+                                                                    // The day labels in the header (Sun, Mon, etc.)
+                                                                    dayLabel: {
+                                                                        className: 'dark:text-slate-400'
+                                                                    },
+                                                                    // Individual date numbers
+                                                                    day: ({ context }) => ({
+                                                                        className: context.selected
+                                                                            ? 'dark:!bg-sky-500 dark:!text-white' // Selected date
+                                                                            : context.today
+                                                                            ? 'dark:!bg-slate-700 dark:!text-sky-400' // Today's date
+                                                                            : 'dark:text-slate-300 dark:hover:bg-slate-700' // Other dates
+                                                                    }),
+                                                                    // The calendar icon button
+                                                                    dropdownButton: {
+                                                                        root: {
+                                                                            className: 'dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700'
+                                                                        }
+                                                                    }
+                                                                }} value={editForm.date_of_birth} onChange={e => handleEditFormChange(e, 'date_of_birth')} dateFormat="yy-mm-dd" showIcon /></div>
                     <div className="flex items-center space-x-3 pt-2"><label>Status</label><InputSwitch checked={editForm.is_active} onChange={e => handleEditFormChange(e, 'is_active')} /><span>{editForm.is_active ? 'Active' : 'Inactive'}</span></div>
                 </div>
             </Dialog>

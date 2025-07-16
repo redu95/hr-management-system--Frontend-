@@ -99,7 +99,7 @@ const EmployeesPage = () => {
     };
     return (
         <div className="p-4 sm:p-8">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg transition-colors duration-300">
+            <div className="bg-white pb-11 dark:bg-slate-800 p-6 rounded-xl shadow-lg transition-colors duration-300">
                 {/* Page Header */}
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
                     <div>
