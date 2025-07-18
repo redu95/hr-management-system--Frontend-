@@ -1,19 +1,26 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from "react-router-dom"
+import useAuthStore from "../../store/authStore"
 
-export const memoryToken = { value: null };
+const RequireAuth = ({ children, requiredPermission = null }) => {
+  const { isAuthenticated, user, hasPermission, canAccess } = useAuthStore()
+  const location = useLocation()
 
-const RequireAuth = ({ children }) => {
-  const token = localStorage.getItem('accessToken') || memoryToken.value;
-
-  const location = useLocation();
-
-  if (!token) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Check if user is authenticated
+  if (!isAuthenticated || !user) {
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
-  return children;
-};
 
-export default RequireAuth;
+  // Check specific permission if required
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    return <Navigate to="/unauthorized" replace />
+  }
 
+  // Check route-based access
+  if (!canAccess(location.pathname)) {
+    return <Navigate to="/unauthorized" replace />
+  }
 
+  return children
+}
+
+export default RequireAuth

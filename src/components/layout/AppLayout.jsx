@@ -1,71 +1,84 @@
-// src/components/layout/AppLayout.jsx
-import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import Header from './Header';
-import MobileSidebar from './MobileSidebar';
-import NavigationLinks from './NavigationLinks'; // Import the reusable links
-import guestHomeLogo from '../../assets/guesthome.svg'; // Import the SVG
+"use client"
+import { Outlet } from "react-router-dom"
+import {
+    Box,
+    Drawer,
+    DrawerBody,
+    DrawerHeader,
+    DrawerOverlay,
+    DrawerContent,
+    DrawerCloseButton,
+    useDisclosure,
+    useColorMode,
+    Flex,
+    VStack,
+    Image,
+    Text,
+} from "@chakra-ui/react"
+import Header from "./Header"
+import NavigationLinks from "./NavigationLinks"
+import guestHomeLogo from "../../assets/guesthome.svg"
 
-
-// This is the static sidebar for desktop view
 const DesktopSidebar = () => {
     return (
-        <aside className="w-64 bg-white dark:bg-slate-800 shadow-md flex-col hidden lg:flex">
-            <div className="p-6 text-center border-b border-slate-100 dark:border-slate-700">
-                <img src={guestHomeLogo} alt="Guest Home Logo" className="w-16 h-16 mx-auto mb-2" />
-                <span className="text-base font-semibold text-slate-500 dark:text-slate-300 mt-2 inline-block">HRMS</span>
-            </div>
+        <Box
+            w="64"
+            bg="white"
+            _dark={{ bg: "gray.800" }}
+            shadow="md"
+            display={{ base: "none", lg: "flex" }}
+            flexDirection="column"
+            borderRight="1px"
+            borderColor="gray.200"
+            _dark={{ borderColor: "gray.700" }}
+        >
+            <VStack p={6} borderBottom="1px" borderColor="gray.200" _dark={{ borderColor: "gray.700" }}>
+                <Image src={guestHomeLogo || "/placeholder.svg"} alt="Guest Home Logo" w={16} h={16} />
+                <Text fontSize="lg" fontWeight="semibold" color="gray.500" _dark={{ color: "gray.300" }}>
+                    HRMS
+                </Text>
+            </VStack>
             <NavigationLinks />
-        </aside>
-    );
-};
-
+        </Box>
+    )
+}
 
 const AppLayout = () => {
-    const [mobileSidebarVisible, setMobileSidebarVisible] = useState(false);
-    const [darkMode, setDarkMode] = useState(() => {
-        // Check localStorage or system preference
-        if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem('theme');
-            if (stored) return stored === 'dark';
-            return window.matchMedia('(prefers-color-scheme: dark)').matches;
-        }
-        return false;
-    });
-
-    useEffect(() => {
-        if (darkMode) {
-            document.documentElement.classList.add('dark');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-            localStorage.setItem('theme', 'light');
-        }
-    }, [darkMode]);
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const { colorMode, toggleColorMode } = useColorMode()
 
     return (
-        <div className="flex h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-            {/* Renders the static sidebar for large screens */}
+        <Flex h="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
+            {/* Desktop Sidebar */}
             <DesktopSidebar />
 
-            {/* Renders the PrimeReact sidebar for small screens */}
-            <MobileSidebar 
-                visible={mobileSidebarVisible} 
-                onHide={() => setMobileSidebarVisible(false)} 
-            />
+            {/* Mobile Sidebar */}
+            <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="sm">
+                <DrawerOverlay />
+                <DrawerContent>
+                    <DrawerCloseButton />
+                    <DrawerHeader>
+                        <VStack spacing={2}>
+                            <Image src={guestHomeLogo || "/placeholder.svg"} alt="Guest Home Logo" w={12} h={12} />
+                            <Text fontSize="lg" fontWeight="semibold" color="gray.500" _dark={{ color: "gray.300" }}>
+                                HRMS
+                            </Text>
+                        </VStack>
+                    </DrawerHeader>
+                    <DrawerBody p={0}>
+                        <NavigationLinks onLinkClick={onClose} />
+                    </DrawerBody>
+                </DrawerContent>
+            </Drawer>
 
-            <main className="flex-1 flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
-                <Header 
-                    onMenuClick={() => setMobileSidebarVisible(true)} 
-                    darkMode={darkMode}
-                    setDarkMode={setDarkMode}
-                />
-                <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+            <Flex flex={1} direction="column" overflow="hidden">
+                <Header onMenuClick={onOpen} darkMode={colorMode === "dark"} setDarkMode={toggleColorMode} />
+                <Box flex={1} overflow="auto" bg="gray.50" _dark={{ bg: "gray.900" }}>
                     <Outlet />
-                </div>
-            </main>
-        </div>
-    );
-};
+                </Box>
+            </Flex>
+        </Flex>
+    )
+}
 
-export default AppLayout;
+export default AppLayout

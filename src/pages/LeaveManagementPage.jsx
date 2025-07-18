@@ -132,7 +132,7 @@ const LeaveManagementPage = () => {
     const handleApprove = (leaveRequest) => {
         updateLeaveRequestMutation.mutate({
             id: leaveRequest.id,
-            data: { status: 'Approved' } // Backend needs to accept a status field
+            data: { status: 'APPROVED' } // Send "APPROVED" status
         });
     };
 
@@ -140,7 +140,7 @@ const LeaveManagementPage = () => {
     const handleDeny = (leaveRequest) => {
         updateLeaveRequestMutation.mutate({
             id: leaveRequest.id,
-            data: { status: 'Denied' } // Backend needs to accept a status field
+            data: { status: 'DENIED' } // Send "DENIED" status
         });
     };
 
@@ -166,7 +166,7 @@ const LeaveManagementPage = () => {
             'Sick Leave': 'warning',
             'Personal': 'success'
         };
-        return <Tag value={rowData.leave_type} severity={severityMap[rowData.leave_type]} />;
+        return <Tag value={rowData.reason} severity={severityMap[rowData.reason]} />;
     };
 
     // Template for the Actions column
@@ -218,7 +218,7 @@ const LeaveManagementPage = () => {
                         className="p-datatable-customers dark:bg-slate-800 dark:text-slate-100"
                     >
                         <Column header="Employee" body={employeeBodyTemplate} />
-                        <Column header="Leave Type" body={leaveTypeBodyTemplate} />
+                        <Column header="Leave Reason" body={leaveTypeBodyTemplate} />
                         <Column field="start_date" header="Start Date" />
                         <Column field="end_date" header="End Date" />
                         {/*<Column field="days" header="Days" /> Backend needs to return the number of days*/}

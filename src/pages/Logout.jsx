@@ -1,26 +1,29 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { memoryToken } from '../components/common/RequireAuth';
+"use client"
+
+import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
+import useAuthStore from "../store/authStore"
 
 const Logout = () => {
-  console.log('Logout component rendered');
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const { logout } = useAuthStore()
 
   useEffect(() => {
     // Clear authentication tokens and any other user data
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    memoryToken.value = null; // Clear in-memory token
+    logout()
 
     // Redirect to login page after clearing
-    navigate('/login');
-  }, [navigate]);
+    navigate("/login", { replace: true })
+  }, [logout, navigate])
 
   return (
-    <div className="p-8">
-      <h2 className="text-2xl font-bold mb-6">Logging out...</h2>
+    <div className="p-8 flex items-center justify-center min-h-screen">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-4 text-slate-800 dark:text-slate-100">Logging out...</h2>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      </div>
     </div>
-  );
-};
+  )
+}
 
-export default Logout;
+export default Logout

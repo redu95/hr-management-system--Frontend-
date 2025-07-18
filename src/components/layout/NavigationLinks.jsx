@@ -1,51 +1,104 @@
-// src/components/layout/NavigationLinks.jsx
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+"use client"
+
+import { NavLink } from "react-router-dom"
+import { VStack, Box, Text, HStack, useColorModeValue } from "@chakra-ui/react"
+import {
+    FaTachometerAlt,
+    FaUsers,
+    FaBuilding,
+    FaCalendarAlt,
+    FaChartBar,
+    FaCog,
+    FaUserPlus,
+    FaSignOutAlt,
+} from "react-icons/fa"
+import useAuthStore from "../../store/authStore"
+import RoleBasedComponent from "../common/RoleBasedComponent"
 
 const NavigationLinks = ({ onLinkClick }) => {
-    const getNavLinkClass = ({ isActive }) => {
-        // Updated active classes for the new design
-        const baseClasses = "flex items-center space-x-4 p-3 rounded-lg text-slate-700 hover:bg-slate-100 font-medium dark:text-slate-100 dark:hover:bg-slate-700";
-        const activeClasses = "bg-sky-100 text-sky-700 dark:text-slate-100 dark:bg-sky-900";
-        return isActive ? `${baseClasses} ${activeClasses}` : baseClasses;
-    };
+    const { user } = useAuthStore()
+
+    const activeBg = useColorModeValue("blue.50", "blue.900")
+    const activeColor = useColorModeValue("blue.700", "blue.200")
+    const hoverBg = useColorModeValue("gray.100", "gray.700")
+    const textColor = useColorModeValue("gray.700", "gray.100")
+
+    const NavItem = ({ to, icon: Icon, children, onClick }) => (
+        <NavLink to={to} onClick={onClick}>
+            {({ isActive }) => (
+                <HStack
+                    w="full"
+                    p={3}
+                    borderRadius="lg"
+                    bg={isActive ? activeBg : "transparent"}
+                    color={isActive ? activeColor : textColor}
+                    _hover={{ bg: isActive ? activeBg : hoverBg }}
+                    transition="all 0.2s"
+                    cursor="pointer"
+                >
+                    <Icon size="18" />
+                    <Text fontWeight="medium">{children}</Text>
+                </HStack>
+            )}
+        </NavLink>
+    )
 
     return (
-        <>
-            <nav className="flex-1 px-4 py-6 space-y-2">
-                <NavLink to="/dashboard" className={getNavLinkClass} onClick={onLinkClick}>
-                    <i className="pi pi-th-large w-6 text-center text-lg dark:text-slate-100"></i>
-                    <span>Dashboard</span>
-                </NavLink>
-                <NavLink to="/employees" className={getNavLinkClass} onClick={onLinkClick}>
-                    <i className="pi pi-users w-6 text-center text-lg dark:text-slate-100"></i>
-                    <span>Employees</span>
-                </NavLink>
-                <NavLink to="/departments" className={getNavLinkClass} onClick={onLinkClick}>
-                    <i className="pi pi-briefcase w-6 text-center text-lg dark:text-slate-100"></i>
-                    <span>Departments</span>
-                </NavLink>
-                <NavLink to="/leave" className={getNavLinkClass} onClick={onLinkClick}>
-                    <i className="pi pi-calendar w-6 text-center text-lg dark:text-slate-100"></i>
-                    <span>Leave Mgt.</span>
-                </NavLink>
-                <NavLink to="/reports" className={getNavLinkClass} onClick={onLinkClick}>
-                    <i className="pi pi-chart-bar w-6 text-center text-lg dark:text-slate-100"></i>
-                    <span>Reports</span>
-                </NavLink>
-                <NavLink to="/settings" className={getNavLinkClass} onClick={onLinkClick}>
-                    <i className="pi pi-cog w-6 text-center text-lg dark:text-slate-100"></i>
-                    <span>Settings</span>
-                </NavLink>
-            </nav>
-            <div className="px-4 py-6 border-t">
-                <NavLink to="/logout" className="flex items-center space-x-4 p-3 rounded-lg text-slate-700 hover:bg-slate-100 font-medium dark:text-slate-100" onClick={onLinkClick}>
-                    <i className="pi pi-sign-out w-6 text-center text-lg"></i>
-                    <span>Logout</span>
-                </NavLink>
-            </div>
-        </>
-    );
-};
+        <VStack spacing={0} align="stretch" flex={1}>
+            <VStack spacing={2} p={4} flex={1} align="stretch">
+                {/* Dashboard - Available to all roles */}
+                <NavItem to="/dashboard" icon={FaTachometerAlt} onClick={onLinkClick}>
+                    Dashboard
+                </NavItem>
 
-export default NavigationLinks;
+                {/* Employees - Available to CEO, Manager, HR */}
+                <RoleBasedComponent requiredPermission="canManageEmployees">
+                    <NavItem to="/employees" icon={FaUsers} onClick={onLinkClick}>
+                        Employees
+                    </NavItem>
+                </RoleBasedComponent>
+
+                {/* Departments - Available to CEO, HR */}
+                <RoleBasedComponent requiredPermission="canManageDepartments">
+                    <NavItem to="/departments" icon={FaBuilding} onClick={onLinkClick}>
+                        Departments
+                    </NavItem>
+                </RoleBasedComponent>
+
+                {/* Leave Management - Different access levels */}
+                <NavItem to="/leave" icon={FaCalendarAlt} onClick={onLinkClick}>
+                    {user?.role === "Employee" ? "My Leave" : "Leave Management"}
+                </NavItem>
+
+                {/* Reports - Available to CEO, Manager, HR */}
+                <RoleBasedComponent requiredPermission="canViewReports">
+                    <NavItem to="/reports" icon={FaChartBar} onClick={onLinkClick}>
+                        Reports
+                    </NavItem>
+                </RoleBasedComponent>
+
+                {/* Register Users - Available to CEO, HR */}
+                <RoleBasedComponent requiredPermission="canRegisterUsers">
+                    <NavItem to="/register" icon={FaUserPlus} onClick={onLinkClick}>
+                        Register User
+                    </NavItem>
+                </RoleBasedComponent>
+
+                {/* Settings - Available to CEO, HR */}
+                <RoleBasedComponent requiredPermission="canManageSettings">
+                    <NavItem to="/settings" icon={FaCog} onClick={onLinkClick}>
+                        Settings
+                    </NavItem>
+                </RoleBasedComponent>
+            </VStack>
+
+            <Box p={4} borderTop="1px" borderColor={useColorModeValue("gray.200", "gray.700")}>
+                <NavItem to="/logout" icon={FaSignOutAlt} onClick={onLinkClick}>
+                    Logout
+                </NavItem>
+            </Box>
+        </VStack>
+    )
+}
+
+export default NavigationLinks
