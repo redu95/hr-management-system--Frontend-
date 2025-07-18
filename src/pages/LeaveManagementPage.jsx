@@ -14,7 +14,7 @@ import { Toast } from 'primereact/toast';
 // Service functions (replace with your actual implementation)
 const fetchLeaveRequests = async () => {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/leave-requests/`, {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/leaves/leave-requests/`, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -22,12 +22,13 @@ const fetchLeaveRequests = async () => {
     if (!res.ok) {
         throw new Error('Failed to fetch leave requests');
     }
-    return res.json();
+    const data = await res.json();
+    return data.results; // Extract the results array from the response
 };
 
 const createLeaveRequest = async (data) => {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/leave-requests/`, {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/leaves/leave-requests/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ const createLeaveRequest = async (data) => {
 
 const updateLeaveRequest = async ({ id, data }) => {
     const token = localStorage.getItem('accessToken');
-    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/leave-requests/${id}/`, {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/leaves/leave-requests/${id}/`, {
         method: 'PATCH', // Or PUT
         headers: {
             'Content-Type': 'application/json',
@@ -145,12 +146,15 @@ const LeaveManagementPage = () => {
 
     // Template for the Employee column
     const employeeBodyTemplate = (rowData) => {
+        const employee = rowData.employee_details;
         return (
             <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold ">
-                    {rowData.employee.name.charAt(0).toUpperCase()}
+                    {employee.first_name.charAt(0).toUpperCase()}
                 </div>
-                <span className="font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">{rowData.employee.name}</span>
+                <span className="font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                    {`${employee.first_name} ${employee.last_name}`}
+                </span>
             </div>
         );
     };
@@ -209,7 +213,7 @@ const LeaveManagementPage = () => {
                     <div>Error: {error.message}</div>
                 ) : (
                     <DataTable
-                        value={leaveRequests || []} // Provide a default empty array
+                        value={Array.isArray(leaveRequests) ? leaveRequests : []} // Ensure value is always an array
                         responsiveLayout="scroll"
                         className="p-datatable-customers dark:bg-slate-800 dark:text-slate-100"
                     >
