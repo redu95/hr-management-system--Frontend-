@@ -40,27 +40,52 @@ const LoginPage = () => {
     const location = useLocation()
     const toast = useToast()
 
-    const { login, isAuthenticated, initializeAuth } = useAuthStore()
+    const { login, isAuthenticated, initializeAuth, user } = useAuthStore()
 
     const bgGradient = useColorModeValue("linear(to-br, blue.50, purple.50)", "linear(to-br, gray.900, purple.900)")
     const cardBg = useColorModeValue("white", "gray.800")
     const textColor = useColorModeValue("gray.600", "gray.300")
 
+    const demoCredentials = [
+        { role: "CEO", username: "ceo", password: "password123", color: "purple" },
+        { role: "HR", username: "hr1", password: "password123", color: "green" },
+        { role: "Manager", username: "manager1", password: "password123", color: "blue" },
+        { role: "Employee", username: "employee1", password: "password123", color: "gray" },
+    ]
+
+    console.log("🔍 [LOGIN_PAGE] Component rendered with state:", {
+        isAuthenticated,
+        hasUser: !!user,
+        userRole: user?.role,
+        currentPath: location.pathname,
+    })
+
     // Initialize auth on component mount
     useEffect(() => {
+        console.log("🔄 [LOGIN_PAGE] Initializing auth on mount")
         initializeAuth()
-    }, [])
+    }, [initializeAuth])
 
     // Redirect if already authenticated
     useEffect(() => {
-        if (isAuthenticated) {
+        console.log("🔍 [LOGIN_PAGE] Checking if should redirect:", {
+            isAuthenticated,
+            hasUser: !!user,
+            fromPath: location.state?.from?.pathname,
+        })
+
+        if (isAuthenticated && user) {
             const from = location.state?.from?.pathname || "/dashboard"
+            console.log("✅ [LOGIN_PAGE] User is authenticated, redirecting to:", from)
             navigate(from, { replace: true })
         }
-    }, [isAuthenticated, navigate, location])
+    }, [isAuthenticated, user, navigate, location])
 
     const handleLogin = async () => {
+        console.log("🚀 [LOGIN_PAGE] Login button clicked")
+
         if (!username || !password) {
+            console.log("⚠️ [LOGIN_PAGE] Missing credentials")
             toast({
                 title: "Missing Information",
                 description: "Please enter both username and password",
@@ -72,8 +97,11 @@ const LoginPage = () => {
         }
 
         setLoading(true)
+        console.log("🔄 [LOGIN_PAGE] Starting login process")
+
         try {
             const result = await login(username, password)
+            console.log("✅ [LOGIN_PAGE] Login successful:", result)
 
             toast({
                 title: "Login Successful",
@@ -83,12 +111,24 @@ const LoginPage = () => {
                 isClosable: true,
             })
 
+            // Check auth state immediately after login
+            const authState = useAuthStore.getState()
+            console.log("🔍 [LOGIN_PAGE] Auth state after login:", {
+                isAuthenticated: authState.isAuthenticated,
+                user: authState.user,
+                hasToken: !!authState.accessToken,
+            })
+
             // Navigate after a short delay to show the success message
+            const from = location.state?.from?.pathname || "/dashboard"
+            console.log("🎯 [LOGIN_PAGE] Will navigate to:", from)
+
             setTimeout(() => {
-                const from = location.state?.from?.pathname || "/dashboard"
+                console.log("🚀 [LOGIN_PAGE] Navigating to:", from)
                 navigate(from, { replace: true })
             }, 1000)
         } catch (error) {
+            console.error("💥 [LOGIN_PAGE] Login failed:", error)
             toast({
                 title: "Login Failed",
                 description: error.message || "Invalid credentials",
@@ -107,12 +147,18 @@ const LoginPage = () => {
         }
     }
 
-    const demoCredentials = [
-        { role: "CEO", username: "ceo", password: "password123", color: "purple" },
-        { role: "HR", username: "hr1", password: "password123", color: "green" },
-        { role: "Manager", username: "manager1", password: "password123", color: "blue" },
-        { role: "Employee", username: "employee1", password: "password123", color: "gray" },
-    ]
+    // Show loading state while checking authentication
+    if (isAuthenticated && user) {
+        console.log("🔄 [LOGIN_PAGE] Showing loading state while redirecting")
+        return (
+            <Box minH="100vh" bgGradient={bgGradient} display="flex" alignItems="center" justifyContent="center">
+                <VStack spacing={4}>
+                    <Text>Redirecting...</Text>
+                    <Box className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                </VStack>
+            </Box>
+        )
+    }
 
     return (
         <Box minH="100vh" bgGradient={bgGradient} display="flex" alignItems="center" justifyContent="center" p={4}>
@@ -224,7 +270,7 @@ const LoginPage = () => {
                                 </Button>
 
                                 {/* Demo Credentials */}
-                                <Box w="full" p={4} bg={useColorModeValue("gray.50", "gray.700")} borderRadius="lg">
+                                <Box w="full" p={4} bg={useColorModeValue("gray.50", "gray.800")} borderRadius="lg">
                                     <Text fontSize="sm" fontWeight="medium" mb={3} color={textColor}>
                                         Demo Credentials:
                                     </Text>

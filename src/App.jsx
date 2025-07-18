@@ -16,17 +16,22 @@ import AppLayout from "./components/layout/AppLayout"
 import RequireAuth from "./components/common/RequireAuth"
 import DepartmentsPage from "./pages/DepartmentsPage"
 import useAuthStore from "./store/authStore"
-import "./App.css"
 
 const queryClient = new QueryClient()
 
 function App() {
-  const { initializeAuth } = useAuthStore()
+  const { initializeAuth, isAuthenticated, user } = useAuthStore()
+
+  console.log("🚀 [APP] App component rendered with auth state:", {
+    isAuthenticated,
+    hasUser: !!user,
+    userRole: user?.role,
+  })
 
   useEffect(() => {
-    // Initialize authentication on app start
+    console.log("🔄 [APP] Initializing auth on app start")
     initializeAuth()
-  }, [])
+  }, [initializeAuth])
 
   return (
     <QueryClientProvider client={queryClient}>
