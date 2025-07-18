@@ -89,6 +89,7 @@ const useAuthStore = create(
 
                     const data = await response.json()
                     const decodedToken = decodeToken(data.access)
+                    console.log("decoded token", decodedToken);
 
                     if (!decodedToken) {
                         throw new Error("Invalid token received")

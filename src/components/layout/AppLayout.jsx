@@ -30,7 +30,6 @@ const DesktopSidebar = () => {
             flexDirection="column"
             borderRight="1px"
             borderColor="gray.200"
-            _dark={{ borderColor: "gray.700" }}
         >
             <VStack p={6} borderBottom="1px" borderColor="gray.200" _dark={{ borderColor: "gray.700" }}>
                 <Image src={guestHomeLogo || "/placeholder.svg"} alt="Guest Home Logo" w={16} h={16} />
