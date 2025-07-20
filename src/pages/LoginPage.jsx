@@ -106,7 +106,7 @@ const LoginPage = () => {
                                 id="username"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                className="w-full"
+                                className="w-full bg-slate-50 dark:bg-slate-700 p-2"
                                 inputClassName="p-3 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 rounded-lg dark:text-slate-100"
                                 placeholder="your username"
                             />
@@ -121,7 +121,7 @@ const LoginPage = () => {
                                 inputId="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full"
+                                className="w-full border-slate"
                                 inputClassName="p-3 bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 rounded-lg dark:text-slate-100"
                                 placeholder="************"
                                 feedback={false} // Hides the password strength meter
@@ -132,7 +132,7 @@ const LoginPage = () => {
 
                     {/* Forgot Password Link */}
                     <div className="flex items-center justify-end mt-4">
-                        <a href="#" className="text-sm text-sky-600 hover:underline dark:text-sky-400">
+                        <a href="#" className="text-sm text-[#9a79f3] hover:underline dark:text-[#c1aaff]">
                             Forgot Password?
                         </a>
                     </div>
@@ -141,7 +141,7 @@ const LoginPage = () => {
                     <Button
                         label="Login"
                         onClick={handleLogin}
-                        className="w-full mt-6 bg-sky-600 border-sky-600 hover:bg-sky-700 hover:border-sky-700"
+                        className=" p-4  w-full mt-6 bg-[#8d64fa] border-[#8d64fa] hover:bg-[#5837b2] hover:border-[#8d64fa]"
                     />
                 </div>
             </div>

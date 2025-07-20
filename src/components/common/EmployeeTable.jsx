@@ -11,7 +11,7 @@ import { InputSwitch } from 'primereact/inputswitch';
 import { Calendar } from 'primereact/calendar';
 import { Toast } from 'primereact/toast';
 
-const EmployeeTable = () => {
+const EmployeeTable = ({ onDelete }) => {
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
     const [departments, setDepartments] = useState([]);
@@ -133,7 +133,8 @@ const EmployeeTable = () => {
 
         const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/employees/${selectedEmployee.id}/`, {
             method: 'PUT',
-            headers: {
+            headers:
+             {
                 'Content-Type': 'application/json',
                 ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
@@ -175,6 +176,7 @@ const EmployeeTable = () => {
         <div className="flex items-center space-x-2">
             <Button icon="pi pi-eye" className="p-button-rounded p-button-text p-button-info" onClick={() => openViewModal(rowData)} />
             <Button icon="pi pi-pencil" className="p-button-rounded p-button-text p-button-warning" onClick={() => openEditModal(rowData)} />
+            <Button icon="pi pi-trash" className="p-button-rounded p-button-text p-button-danger" onClick={() => onDelete(rowData.id)} />
         </div>
     );
 
@@ -279,20 +281,20 @@ const EmployeeTable = () => {
             }
             >
                 <div className="p-fluid space-y-4  dark:bg-slate-800 dark:text-slate-300">
-                    <div><label>First Name</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.first_name} onChange={e => handleEditFormChange(e, 'first_name')} /></div>
-                    <div><label>Last Name</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.last_name} onChange={e => handleEditFormChange(e, 'last_name')} /></div>
-                    <div><label>Email</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.email} onChange={e => handleEditFormChange(e, 'email')} /></div>
-                    <div><label>Job Title</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.job_title} onChange={e => handleEditFormChange(e, 'job_title')} /></div>
-                    <div><label>Department</label><Dropdown pt={{
+                    <div><label  className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">First Name</label><InputText className='w-full !border !border-slate-400 dark:!border-slate-500 dark:!bg-slate-700 dark:!text-slate-100 !rounded-md p-3' value={editForm.first_name} onChange={e => handleEditFormChange(e, 'first_name')} /></div>
+                    <div><label  className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">Last Name</label><InputText  className='w-full !border !border-slate-400 dark:!border-slate-500 dark:!bg-slate-700 dark:!text-slate-100 !rounded-md p-3' value={editForm.last_name} onChange={e => handleEditFormChange(e, 'last_name')} /></div>
+                    <div><label  className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">Email</label><InputText  className='w-full !border !border-slate-400 dark:!border-slate-500 dark:!bg-slate-700 dark:!text-slate-100 !rounded-md p-3' value={editForm.email} onChange={e => handleEditFormChange(e, 'email')} /></div>
+                    <div><label  className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">Job Title</label><InputText  className='w-full !border !border-slate-400 dark:!border-slate-500 dark:!bg-slate-700 dark:!text-slate-100 !rounded-md p-3' value={editForm.job_title} onChange={e => handleEditFormChange(e, 'job_title')} /></div>
+                    <div><label  className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">Department</label><Dropdown pt={{
                                                                 root: { className: 'dark:bg-slate-800 dark:border-slate-700' },
                                                                 input: { className: 'dark:text-slate-300' },
                                                                 trigger: { className: 'dark:bg-slate-800 dark:text-slate-400' },
                                                                 panel: { className: 'dark:bg-slate-800 dark:text-slate-300' },
                                                                 item: { className: 'dark:hover:bg-slate-700' },
                                                                 filterInput: { className: 'dark:bg-slate-700' }
-                                                            }} value={editForm.department} options={departments} optionLabel="name" placeholder="Select Department" onChange={e => handleEditFormChange(e, 'department')} filter /></div>
-                    <div><label>Phone Number</label><InputText className=' dark:bg-slate-800 dark:text-slate-300' value={editForm.phone_number} onChange={e => handleEditFormChange(e, 'phone_number')} /></div>
-                    <div><label>Date of Birth</label><Calendar pt={{
+                                                            }} value={editForm.department} options={departments} optionLabel="name" placeholder="Select Department" onChange={e => handleEditFormChange(e, 'department')} filter  className="w-full !border !border-slate-400 dark:!border-slate-500 dark:!bg-slate-700 dark:!text-slate-100 !rounded-md"/></div>
+                    <div><label  className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">Phone Number</label><InputText  className='w-full !border !border-slate-400 dark:!border-slate-500 dark:!bg-slate-700 dark:!text-slate-100 !rounded-md p-3' value={editForm.phone_number} onChange={e => handleEditFormChange(e, 'phone_number')} /></div>
+                    <div><label  className="block text-sm font-medium mb-2 text-slate-700 dark:text-slate-200">Date of Birth</label><Calendar pt={{
                                                                     // Input field
                                                                     input: {
                                                                         className: 'dark:bg-red-800 dark:text-red-300 dark:border-slate-600'
@@ -327,8 +329,8 @@ const EmployeeTable = () => {
                                                                             className: 'dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-700'
                                                                         }
                                                                     }
-                                                                }} value={editForm.date_of_birth} onChange={e => handleEditFormChange(e, 'date_of_birth')} dateFormat="yy-mm-dd" showIcon /></div>
-                    <div className="flex items-center space-x-3 pt-2"><label>Status</label><InputSwitch checked={editForm.is_active} onChange={e => handleEditFormChange(e, 'is_active')} /><span>{editForm.is_active ? 'Active' : 'Inactive'}</span></div>
+                                                                }} value={editForm.date_of_birth} onChange={e => handleEditFormChange(e, 'date_of_birth')} dateFormat="yy-mm-dd" showIcon  className="w-full !border !border-slate-400 dark:!border-slate-500 dark:!bg-slate-700 dark:!text-slate-100 !rounded-md"/></div>
+                    <div className="flex items-center space-x-3 pt-2"><label  className="text-sm font-medium text-slate-700 dark:text-slate-200">Status</label><InputSwitch checked={editForm.is_active} onChange={e => handleEditFormChange(e, 'is_active')} /><span>{editForm.is_active ? 'Active' : 'Inactive'}</span></div>
                 </div>
             </Dialog>
 
