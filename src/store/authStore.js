@@ -77,13 +77,17 @@ const useAuthStore = create(
             },
 
             // Actions
-            login: async (username, password) => {
-                console.log("🚀 [AUTH] Starting login process for:", username)
+            login: async (emailOrUsername, password) => {
+                console.log("🚀 [AUTH] Starting login process for:", emailOrUsername)
                 try {
+                    // Use the token endpoint that returns JWT tokens
                     const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/token/`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ username, password }),
+                        body: JSON.stringify({
+                            email: emailOrUsername, // Backend expects 'identifier'
+                            password: password,
+                        }),
                     })
 
                     console.log("📡 [AUTH] Login response status:", response.status)
@@ -91,12 +95,28 @@ const useAuthStore = create(
                     if (!response.ok) {
                         const errorData = await response.json()
                         console.error("❌ [AUTH] Login failed with error:", errorData)
-                        throw new Error(errorData.detail || "Login failed")
+
+                        // Handle different error formats
+                        let errorMessage = "Login failed"
+                        if (errorData.errors) {
+                            // Handle validation errors
+                            const errors = Object.values(errorData.errors).flat()
+                            errorMessage = errors.join(", ")
+                        } else if (errorData.detail) {
+                            errorMessage = errorData.detail
+                        } else if (errorData.message) {
+                            errorMessage = errorData.message
+                        } else if (errorData.non_field_errors) {
+                            errorMessage = errorData.non_field_errors.join(", ")
+                        }
+
+                        throw new Error(errorMessage)
                     }
 
                     const data = await response.json()
                     console.log("📦 [AUTH] Login response data:", data)
 
+                    // Decode the access token to get user info
                     const decodedToken = decodeToken(data.access)
 
                     if (!decodedToken) {
@@ -115,11 +135,16 @@ const useAuthStore = create(
                         throw new Error("Token is expired")
                     }
 
+                    // Create user object from both token data and response data
                     const user = {
                         id: decodedToken.user_id,
-                        username: decodedToken.username || username,
-                        role: decodedToken.role || "Employee",
-                        email: decodedToken.email,
+                        username: decodedToken.username || data.username || emailOrUsername,
+                        email: decodedToken.email || data.email,
+                        role:
+                            (decodedToken.role || data.role || "Employee").toLowerCase() === "employee"
+                                ? "Employee"
+                                : (decodedToken.role || data.role || "Employee").charAt(0).toUpperCase() +
+                                (decodedToken.role || data.role || "Employee").slice(1).toLowerCase(),
                     }
 
                     console.log("👤 [AUTH] User object created:", user)
@@ -135,9 +160,11 @@ const useAuthStore = create(
                     // Also store in localStorage for compatibility
                     localStorage.setItem("accessToken", data.access)
                     localStorage.setItem("refreshToken", data.refresh)
+                    localStorage.setItem("user", JSON.stringify(user))
+                    localStorage.setItem("isAuthenticated", "true")
 
                     console.log("✅ [AUTH] Login successful, state updated")
-                    console.log("💾 [AUTH] Tokens stored in localStorage")
+                    console.log("💾 [AUTH] Tokens and user data stored in localStorage")
 
                     // Verify state was set correctly
                     const currentState = get()
@@ -174,7 +201,18 @@ const useAuthStore = create(
                     if (!response.ok) {
                         const errorData = await response.json()
                         console.error("❌ [AUTH] Registration failed:", errorData)
-                        throw new Error(errorData.detail || "Registration failed")
+
+                        let errorMessage = "Registration failed"
+                        if (errorData.errors) {
+                            const errors = Object.values(errorData.errors).flat()
+                            errorMessage = errors.join(", ")
+                        } else if (errorData.detail) {
+                            errorMessage = errorData.detail
+                        } else if (errorData.message) {
+                            errorMessage = errorData.message
+                        }
+
+                        throw new Error(errorMessage)
                     }
 
                     const result = await response.json()
@@ -196,7 +234,48 @@ const useAuthStore = create(
                 })
                 localStorage.removeItem("accessToken")
                 localStorage.removeItem("refreshToken")
+                localStorage.removeItem("user")
+                localStorage.removeItem("isAuthenticated")
                 console.log("✅ [AUTH] Logout complete, state cleared")
+            },
+
+            // Token refresh function
+            refreshAccessToken: async () => {
+                console.log("🔄 [AUTH] Attempting to refresh access token")
+                const { refreshToken } = get()
+
+                if (!refreshToken) {
+                    console.log("❌ [AUTH] No refresh token available")
+                    get().logout()
+                    return null
+                }
+
+                try {
+                    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/token/refresh/`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ refresh: refreshToken }),
+                    })
+
+                    if (!response.ok) {
+                        console.log("❌ [AUTH] Token refresh failed")
+                        get().logout()
+                        return null
+                    }
+
+                    const data = await response.json()
+                    console.log("✅ [AUTH] Token refreshed successfully")
+
+                    // Update tokens
+                    set({ accessToken: data.access })
+                    localStorage.setItem("accessToken", data.access)
+
+                    return data.access
+                } catch (error) {
+                    console.error("💥 [AUTH] Token refresh error:", error)
+                    get().logout()
+                    return null
+                }
             },
 
             // Permission helpers
@@ -248,13 +327,15 @@ const useAuthStore = create(
 
                 const token = localStorage.getItem("accessToken")
                 const refreshToken = localStorage.getItem("refreshToken")
+                const storedUser = localStorage.getItem("user")
 
-                console.log("💾 [AUTH] Found tokens in localStorage:", {
+                console.log("💾 [AUTH] Found data in localStorage:", {
                     hasAccessToken: !!token,
                     hasRefreshToken: !!refreshToken,
+                    hasUser: !!storedUser,
                 })
 
-                if (token) {
+                if (token && storedUser) {
                     const decodedToken = decodeToken(token)
 
                     if (decodedToken) {
@@ -268,35 +349,36 @@ const useAuthStore = create(
                         })
 
                         if (!isExpired) {
-                            const user = {
-                                id: decodedToken.user_id,
-                                username: decodedToken.username,
-                                role: decodedToken.role || "Employee",
-                                email: decodedToken.email,
+                            try {
+                                const user = JSON.parse(storedUser)
+                                console.log("👤 [AUTH] Restoring user from storage:", user)
+
+                                set({
+                                    user,
+                                    accessToken: token,
+                                    refreshToken: refreshToken,
+                                    isAuthenticated: true,
+                                })
+
+                                console.log("✅ [AUTH] Authentication restored successfully")
+
+                                // Verify state after initialization
+                                const currentState = get()
+                                console.log("🔍 [AUTH] State after initialization:", {
+                                    isAuthenticated: currentState.isAuthenticated,
+                                    user: currentState.user,
+                                    hasToken: !!currentState.accessToken,
+                                })
+
+                                return
+                            } catch (error) {
+                                console.error("❌ [AUTH] Failed to parse stored user data:", error)
                             }
-
-                            console.log("👤 [AUTH] Restoring user from token:", user)
-
-                            set({
-                                user,
-                                accessToken: token,
-                                refreshToken: refreshToken,
-                                isAuthenticated: true,
-                            })
-
-                            console.log("✅ [AUTH] Authentication restored successfully")
-
-                            // Verify state after initialization
-                            const currentState = get()
-                            console.log("🔍 [AUTH] State after initialization:", {
-                                isAuthenticated: currentState.isAuthenticated,
-                                user: currentState.user,
-                                hasToken: !!currentState.accessToken,
-                            })
-
-                            return
                         } else {
-                            console.log("⚠️ [AUTH] Token is expired, clearing storage")
+                            console.log("⚠️ [AUTH] Token is expired, attempting refresh")
+                            // Try to refresh the token
+                            get().refreshAccessToken()
+                            return
                         }
                     } else {
                         console.log("❌ [AUTH] Failed to decode stored token")
@@ -305,7 +387,7 @@ const useAuthStore = create(
                     // Token expired or invalid, clear everything
                     get().logout()
                 } else {
-                    console.log("ℹ️ [AUTH] No stored token found")
+                    console.log("ℹ️ [AUTH] No stored authentication data found")
                 }
             },
         }),

@@ -32,7 +32,7 @@ const MotionBox = motion(Box)
 const MotionCard = motion(Card)
 
 const LoginPage = () => {
-    const [username, setUsername] = useState("")
+    const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
@@ -47,48 +47,21 @@ const LoginPage = () => {
     const textColor = useColorModeValue("gray.600", "gray.300")
 
     const demoCredentials = [
-        { role: "CEO", username: "ceo", password: "password123", color: "purple" },
-        { role: "HR", username: "hr1", password: "password123", color: "green" },
-        { role: "Manager", username: "manager1", password: "password123", color: "blue" },
-        { role: "Employee", username: "employee1", password: "password123", color: "gray" },
+        { role: "CEO", credential: "ceo@company.com", password: "password123", color: "purple" },
+        { role: "HR", credential: "hr@company.com", password: "password123", color: "green" },
+        { role: "Manager", credential: "manager@company.com", password: "password123", color: "blue" },
+        { role: "Employee", credential: "employee@company.com", password: "password123", color: "gray" },
     ]
 
-    console.log("🔍 [LOGIN_PAGE] Component rendered with state:", {
-        isAuthenticated,
-        hasUser: !!user,
-        userRole: user?.role,
-        currentPath: location.pathname,
-    })
+    const handleLogin = async (event) => {
+        event.preventDefault()
+        console.log("🔍 [LOGIN_PAGE] Attempting login with:", { email, password }) // Debug log
 
-    // Initialize auth on component mount
-    useEffect(() => {
-        console.log("🔄 [LOGIN_PAGE] Initializing auth on mount")
-        initializeAuth()
-    }, [initializeAuth])
-
-    // Redirect if already authenticated
-    useEffect(() => {
-        console.log("🔍 [LOGIN_PAGE] Checking if should redirect:", {
-            isAuthenticated,
-            hasUser: !!user,
-            fromPath: location.state?.from?.pathname,
-        })
-
-        if (isAuthenticated && user) {
-            const from = location.state?.from?.pathname || "/dashboard"
-            console.log("✅ [LOGIN_PAGE] User is authenticated, redirecting to:", from)
-            navigate(from, { replace: true })
-        }
-    }, [isAuthenticated, user, navigate, location])
-
-    const handleLogin = async () => {
-        console.log("🚀 [LOGIN_PAGE] Login button clicked")
-
-        if (!username || !password) {
+        if (!email || !password) {
             console.log("⚠️ [LOGIN_PAGE] Missing credentials")
             toast({
                 title: "Missing Information",
-                description: "Please enter both username and password",
+                description: "Please enter both email and password",
                 status: "warning",
                 duration: 3000,
                 isClosable: true,
@@ -100,8 +73,8 @@ const LoginPage = () => {
         console.log("🔄 [LOGIN_PAGE] Starting login process")
 
         try {
-            const result = await login(username, password)
-            console.log("✅ [LOGIN_PAGE] Login successful:", result)
+            const result = await login(email, password)
+            console.log("✅ [LOGIN_PAGE] Login successful:", result) // Debug log
 
             toast({
                 title: "Login Successful",
@@ -128,7 +101,7 @@ const LoginPage = () => {
                 navigate(from, { replace: true })
             }, 1000)
         } catch (error) {
-            console.error("💥 [LOGIN_PAGE] Login failed:", error)
+            console.error("💥 [LOGIN_PAGE] Login failed:", error) // Debug log
             toast({
                 title: "Login Failed",
                 description: error.message || "Invalid credentials",
@@ -146,6 +119,34 @@ const LoginPage = () => {
             handleLogin()
         }
     }
+
+    // Initialize auth on component mount
+    useEffect(() => {
+        console.log("🔄 [LOGIN_PAGE] Initializing auth on mount")
+        initializeAuth()
+    }, [initializeAuth])
+
+    // Redirect if already authenticated
+    useEffect(() => {
+        console.log("🔍 [LOGIN_PAGE] Checking if should redirect:", {
+            isAuthenticated,
+            hasUser: !!user,
+            fromPath: location.state?.from?.pathname,
+        })
+
+        if (isAuthenticated && user) {
+            const from = location.state?.from?.pathname || "/dashboard"
+            console.log("✅ [LOGIN_PAGE] User is authenticated, redirecting to:", from)
+            navigate(from, { replace: true })
+        }
+    }, [isAuthenticated, user, navigate, location])
+
+    console.log("🔍 [LOGIN_PAGE] Component rendered with state:", {
+        isAuthenticated,
+        hasUser: !!user,
+        userRole: user?.role,
+        currentPath: location.pathname,
+    })
 
     // Show loading state while checking authentication
     if (isAuthenticated && user) {
@@ -201,14 +202,14 @@ const LoginPage = () => {
                     >
                         <CardBody p={8}>
                             <VStack spacing={6}>
-                                {/* Username Input */}
+                                {/* Email Input */}
                                 <FormControl>
-                                    <FormLabel>Username</FormLabel>
+                                    <FormLabel>Email</FormLabel>
                                     <Input
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         onKeyPress={handleKeyPress}
-                                        placeholder="Enter your username"
+                                        placeholder="Enter your email"
                                         size="lg"
                                         disabled={loading}
                                     />
@@ -270,11 +271,11 @@ const LoginPage = () => {
                                 </Button>
 
                                 {/* Demo Credentials */}
-                                <Box w="full" p={4} bg={useColorModeValue("gray.50", "gray.800")} borderRadius="lg">
+                                <Box w="full" p={4} bg="gray.50" borderRadius="lg">
                                     <Text fontSize="sm" fontWeight="medium" mb={3} color={textColor}>
-                                        Demo Credentials:
+                                        Demo Credentials (Email):
                                     </Text>
-                                    <Grid templateColumns="repeat(2, 1fr)" gap={2}>
+                                    <Grid templateColumns="repeat(1, 1fr)" gap={2}>
                                         {demoCredentials.map((cred, index) => (
                                             <GridItem key={index}>
                                                 <VStack spacing={1} align="start">
@@ -282,7 +283,7 @@ const LoginPage = () => {
                                                         {cred.role}
                                                     </Badge>
                                                     <Text fontSize="xs" color={textColor}>
-                                                        {cred.username} / {cred.password}
+                                                        {cred.credential} / {cred.password}
                                                     </Text>
                                                 </VStack>
                                             </GridItem>
