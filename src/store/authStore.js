@@ -102,7 +102,7 @@ const useAuthStore = create(
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            identifier: emailOrUsername, // Backend expects 'identifier'
+                            email: emailOrUsername, // Backend expects 'identifier'
                             password: password,
                         }),
                     })
@@ -334,78 +334,14 @@ const useAuthStore = create(
                 return canAccess
             },
 
-            // Initialize auth from stored tokens
             initializeAuth: () => {
-                console.log("🔄 [AUTH] Initializing authentication from storage")
+                const { accessToken, user } = get();
+                console.log("🔄 [AUTH] Initializing auth state:", { accessToken, user });
 
-                const token = localStorage.getItem("accessToken")
-                const refreshToken = localStorage.getItem("refreshToken")
-                const storedUser = localStorage.getItem("user")
-
-                console.log("💾 [AUTH] Found data in localStorage:", {
-                    hasAccessToken: !!token,
-                    hasRefreshToken: !!refreshToken,
-                    hasUser: !!storedUser,
-                })
-
-                if (token && storedUser) {
-                    const decodedToken = decodeToken(token)
-
-                    if (decodedToken) {
-                        const currentTime = Math.floor(Date.now() / 1000)
-                        const isExpired = decodedToken.exp && decodedToken.exp < currentTime
-
-                        console.log("⏰ [AUTH] Token expiration check:", {
-                            exp: decodedToken.exp,
-                            current: currentTime,
-                            isExpired,
-                        })
-
-                        if (!isExpired) {
-                            try {
-                                const storedUserData = JSON.parse(storedUser)
-                                // Normalize the role when restoring from storage
-                                const user = {
-                                    ...storedUserData,
-                                    role: normalizeRole(storedUserData.role),
-                                }
-                                console.log("👤 [AUTH] Restoring user from storage:", user)
-
-                                set({
-                                    user,
-                                    accessToken: token,
-                                    refreshToken: refreshToken,
-                                    isAuthenticated: true,
-                                })
-
-                                console.log("✅ [AUTH] Authentication restored successfully")
-
-                                // Verify state after initialization
-                                const currentState = get()
-                                console.log("🔍 [AUTH] State after initialization:", {
-                                    isAuthenticated: currentState.isAuthenticated,
-                                    user: currentState.user,
-                                    hasToken: !!currentState.accessToken,
-                                })
-
-                                return
-                            } catch (error) {
-                                console.error("❌ [AUTH] Failed to parse stored user data:", error)
-                            }
-                        } else {
-                            console.log("⚠️ [AUTH] Token is expired, attempting refresh")
-                            // Try to refresh the token
-                            get().refreshAccessToken()
-                            return
-                        }
-                    } else {
-                        console.log("❌ [AUTH] Failed to decode stored token")
-                    }
-
-                    // Token expired or invalid, clear everything
-                    get().logout()
+                if (accessToken && user) {
+                    set({ isAuthenticated: true });
                 } else {
-                    console.log("ℹ️ [AUTH] No stored authentication data found")
+                    set({ isAuthenticated: false, user: null });
                 }
             },
         }),
@@ -423,13 +359,6 @@ const useAuthStore = create(
                     refreshToken: state.refreshToken,
                     isAuthenticated: state.isAuthenticated,
                 }
-            },
-            onRehydrateStorage: () => (state) => {
-                console.log("🔄 [AUTH] Rehydrating from persisted storage:", {
-                    hasState: !!state,
-                    isAuthenticated: state?.isAuthenticated,
-                    hasUser: !!state?.user,
-                })
             },
         },
     ),

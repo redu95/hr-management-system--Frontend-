@@ -1,6 +1,4 @@
 "use client"
-
-import { useEffect } from "react"
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import LoginPage from "./pages/LoginPage"
@@ -16,11 +14,13 @@ import AppLayout from "./components/layout/AppLayout"
 import RequireAuth from "./components/common/RequireAuth"
 import DepartmentsPage from "./pages/DepartmentsPage"
 import useAuthStore from "./store/authStore"
+import { BeatLoader } from "react-spinners"
 
 const queryClient = new QueryClient()
 
 function App() {
-  const { initializeAuth, isAuthenticated, user } = useAuthStore()
+  const { isAuthenticated, user } = useAuthStore()
+  const hasHydrated = useAuthStore.persist.hasHydrated()
 
   console.log("🚀 [APP] App component rendered with auth state:", {
     isAuthenticated,
@@ -28,10 +28,20 @@ function App() {
     userRole: user?.role,
   })
 
-  useEffect(() => {
-    console.log("🔄 [APP] Initializing auth on app start")
-    initializeAuth()
-  }, [initializeAuth])
+  if (!hasHydrated) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <BeatLoader color="#36d7b7" />
+      </div>
+    )
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

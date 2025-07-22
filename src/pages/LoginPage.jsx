@@ -40,16 +40,16 @@ const LoginPage = () => {
     const location = useLocation()
     const toast = useToast()
 
-    const { login, isAuthenticated, initializeAuth, user } = useAuthStore()
+    const { login, isAuthenticated, user } = useAuthStore()
 
     const bgGradient = useColorModeValue("linear(to-br, blue.50, purple.50)", "linear(to-br, gray.900, purple.900)")
     const cardBg = useColorModeValue("white", "gray.800")
     const textColor = useColorModeValue("gray.600", "gray.300")
 
     const demoCredentials = [
-        { role: "CEO", credential: "ceo@company.com", password: "password123", color: "purple" },
-        { role: "HR", credential: "hr@company.com", password: "password123", color: "green" },
-        { role: "Manager", credential: "manager@company.com", password: "password123", color: "blue" },
+        { role: "CEO", credential: "t@g.com", password: "1234", color: "purple" },
+        { role: "HR", credential: "hr_manager@example.com", password: "1234", color: "green" },
+        { role: "Manager", credential: "test@example.com", password: "1234", color: "blue" },
         { role: "Employee", credential: "employee@company.com", password: "password123", color: "gray" },
     ]
 
@@ -92,14 +92,9 @@ const LoginPage = () => {
                 hasToken: !!authState.accessToken,
             })
 
-            // Navigate after a short delay to show the success message
-            const from = location.state?.from?.pathname || "/dashboard"
-            console.log("🎯 [LOGIN_PAGE] Will navigate to:", from)
-
-            setTimeout(() => {
-                console.log("🚀 [LOGIN_PAGE] Navigating to:", from)
-                navigate(from, { replace: true })
-            }, 1000)
+            // Always navigate to dashboard after successful login
+            console.log("🚀 [LOGIN_PAGE] Navigating to: /dashboard")
+            navigate("/dashboard", { replace: true })
         } catch (error) {
             console.error("💥 [LOGIN_PAGE] Login failed:", error) // Debug log
             toast({
@@ -120,11 +115,29 @@ const LoginPage = () => {
         }
     }
 
-    // Initialize auth on component mount
-    useEffect(() => {
-        console.log("🔄 [LOGIN_PAGE] Initializing auth on mount")
-        initializeAuth()
-    }, [initializeAuth])
+    const handleCopyToClipboard = (text, label) => {
+        navigator.clipboard
+            .writeText(text)
+            .then(() => {
+                toast({
+                    title: "Copied to Clipboard",
+                    description: `${label} has been copied!`,
+                    status: "success",
+                    duration: 2000,
+                    isClosable: true,
+                })
+            })
+            .catch((err) => {
+                console.error("Failed to copy text: ", err)
+                toast({
+                    title: "Copy Failed",
+                    description: "Unable to copy to clipboard.",
+                    status: "error",
+                    duration: 2000,
+                    isClosable: true,
+                })
+            })
+    }
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -135,9 +148,9 @@ const LoginPage = () => {
         })
 
         if (isAuthenticated && user) {
-            const from = location.state?.from?.pathname || "/dashboard"
-            console.log("✅ [LOGIN_PAGE] User is authenticated, redirecting to:", from)
-            navigate(from, { replace: true })
+            // Always redirect to dashboard if already authenticated
+            console.log("✅ [LOGIN_PAGE] User is authenticated, redirecting to: /dashboard")
+            navigate("/dashboard", { replace: true })
         }
     }, [isAuthenticated, user, navigate, location])
 
@@ -273,7 +286,7 @@ const LoginPage = () => {
                                 {/* Demo Credentials */}
                                 <Box w="full" p={4} bg="gray.50" borderRadius="lg">
                                     <Text fontSize="sm" fontWeight="medium" mb={3} color={textColor}>
-                                        Demo Credentials (Email):
+                                        Demo Credentials :
                                     </Text>
                                     <Grid templateColumns="repeat(1, 1fr)" gap={2}>
                                         {demoCredentials.map((cred, index) => (
@@ -282,9 +295,34 @@ const LoginPage = () => {
                                                     <Badge colorScheme={cred.color} fontSize="xs">
                                                         {cred.role}
                                                     </Badge>
-                                                    <Text fontSize="xs" color={textColor}>
-                                                        {cred.credential} / {cred.password}
-                                                    </Text>
+                                                    <Flex gap={2} align="center">
+                                                        <Text
+                                                            fontSize="xs"
+                                                            color={textColor}
+                                                            cursor="pointer"
+                                                            onClick={() => handleCopyToClipboard(cred.credential, "Email")}
+                                                            _hover={{ textDecoration: "underline", color: "blue.500" }}
+                                                        >
+                                                            {cred.credential}
+                                                        </Text>
+                                                        <Text fontSize="xx-small" color="gray.500">
+                                                            (Click to copy email)
+                                                        </Text>
+                                                    </Flex>
+                                                    <Flex gap={2} align="center">
+                                                        <Text
+                                                            fontSize="xs"
+                                                            color={textColor}
+                                                            cursor="pointer"
+                                                            onClick={() => handleCopyToClipboard(cred.password, "Password")}
+                                                            _hover={{ textDecoration: "underline", color: "blue.500" }}
+                                                        >
+                                                            {cred.password}
+                                                        </Text>
+                                                        <Text fontSize="xx-small" color="gray.500">
+                                                            (Click to copy password)
+                                                        </Text>
+                                                    </Flex>
                                                 </VStack>
                                             </GridItem>
                                         ))}
