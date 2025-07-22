@@ -1,19 +1,38 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation } from "react-router-dom"
+import useAuthStore from "../../store/authStore"
 
-export const memoryToken = { value: null };
+const RequireAuth = ({ children, requiredPermission = null }) => {
+  const { isAuthenticated, user, hasPermission, canAccess } = useAuthStore()
+  const location = useLocation()
 
-const RequireAuth = ({ children }) => {
-  const token = localStorage.getItem('accessToken') || memoryToken.value;
+  console.log("🛡️ [REQUIRE_AUTH] Checking authentication:", {
+    isAuthenticated,
+    hasUser: !!user,
+    userRole: user?.role,
+    currentPath: location.pathname,
+    requiredPermission,
+  })
 
-  const location = useLocation();
-
-  if (!token) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Check if user is authenticated
+  if (!isAuthenticated || !user) {
+    console.log("❌ [REQUIRE_AUTH] User not authenticated, redirecting to login")
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
-  return children;
-};
 
-export default RequireAuth;
+  // Check specific permission if required
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    console.log("❌ [REQUIRE_AUTH] User lacks required permission:", requiredPermission)
+    return <Navigate to="/unauthorized" replace />
+  }
 
+  // Check route-based access
+  if (!canAccess(location.pathname)) {
+    console.log("❌ [REQUIRE_AUTH] User cannot access route:", location.pathname)
+    return <Navigate to="/unauthorized" replace />
+  }
 
+  console.log("✅ [REQUIRE_AUTH] Access granted")
+  return children
+}
+
+export default RequireAuth

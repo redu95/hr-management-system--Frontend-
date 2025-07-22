@@ -1,72 +1,128 @@
-// src/components/layout/Header.jsx
-import React from 'react';
-import { useLocation } from 'react-router-dom';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { InputSwitch } from 'primereact/inputswitch';
+"use client"
 
-const Header = ({ onMenuClick, darkMode, setDarkMode }) => { // Accept darkMode and setDarkMode props
-    const location = useLocation();
+import { useLocation } from "react-router-dom"
+import {
+    Box,
+    Flex,
+    Heading,
+    IconButton,
+    Input,
+    InputGroup,
+    InputRightElement,
+    Switch,
+    HStack,
+    Avatar,
+    VStack,
+    Text,
+    Badge,
+    useColorModeValue,
+} from "@chakra-ui/react"
+import { FaSearch, FaBell, FaSun, FaMoon, FaBars } from "react-icons/fa"
+import useAuthStore from "../../store/authStore"
+
+const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
+    const location = useLocation()
+    const { user } = useAuthStore()
+
+    const bgGradient = useColorModeValue("linear(to-r, blue.500, purple.600)", "linear(to-r, blue.600, purple.700)")
 
     const getPageTitle = (pathname) => {
-        if (pathname === '/') return 'Dashboard';
-        const title = pathname.replace('/', '').charAt(0).toUpperCase() + pathname.slice(2);
-        return title.replace('Mgt', 'Management');
-    };
+        const titles = {
+            "/dashboard": "Dashboard",
+            "/employees": "Employees",
+            "/departments": "Departments",
+            "/leave": user?.role === "Employee" ? "My Leave" : "Leave Management",
+            "/reports": "Reports",
+            "/settings": "Settings",
+            "/register": "Register Employee",
+        }
+        return titles[pathname] || "HRMS"
+    }
 
-    const pageTitle = getPageTitle(location.pathname);
+    const getRoleBadgeColor = (role) => {
+        const colors = {
+            CEO: "purple",
+            Manager: "blue",
+            HR: "green",
+            Employee: "gray",
+        }
+        return colors[role] || "gray"
+    }
+
+    const pageTitle = getPageTitle(location.pathname)
 
     return (
-        <header className="shadow-sm p-4 flex justify-between items-center bg-[#8d64fa] dark:bg-[#8d64fa] transition-colors duration-300">
-            <div className="flex items-center gap-4">
-                {/* Hamburger Menu Button - visible only on small screens */}
-                <Button 
-                    icon="pi pi-bars" 
-                    className="p-button-rounded p-button-text lg:hidden" 
-                    onClick={onMenuClick} 
-                />
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100 hidden md:block">
-                    {pageTitle}
-                </h2>
-            </div>
-
-           {/* Right-side controls */}
-            <div className="flex items-center space-x-4 sm:space-x-6">
-                {/* Search Bar */}
-                <span className="relative hidden sm:inline-flex">
-                    <InputText
-                        placeholder="Search..."
-                        className="w-72 md:w-96 p-inputtext-lg p-3 dark:bg-slate-700 dark:text-slate-100"
+        <Box as="header" bgGradient={bgGradient} shadow="sm" p={4}>
+            <Flex justify="space-between" align="center">
+                <HStack spacing={4}>
+                    {/* Hamburger Menu Button - visible only on small screens */}
+                    <IconButton
+                        icon={<FaBars />}
+                        variant="ghost"
+                        color="white"
+                        display={{ base: "flex", lg: "none" }}
+                        onClick={onMenuClick}
+                        aria-label="Open menu"
                     />
-                    <i className="pi pi-search absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-300 text-lg pointer-events-none ml-2" />
-                </span>
+                    <Heading size="lg" color="white" display={{ base: "none", md: "block" }}>
+                        {pageTitle}
+                    </Heading>
+                </HStack>
 
-                {/* Dark/Light Mode Switch */}
-                <div className="flex items-center space-x-2">
-                    <i className={`pi ${darkMode ? 'pi-moon' : 'pi-sun'} text-xl dark:text-slate-100`} />
-                    <InputSwitch checked={darkMode} onChange={e => setDarkMode(e.value)} tooltip={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"} />
-                </div>
+                {/* Right-side controls */}
+                <HStack spacing={{ base: 2, sm: 4, md: 6 }}>
+                    {/* Search Bar */}
+                    <InputGroup size="md" w={{ base: "200px", md: "300px", lg: "400px" }} display={{ base: "none", sm: "flex" }}>
+                        <Input
+                            placeholder="Search..."
+                            bg="whiteAlpha.200"
+                            border="none"
+                            color="white"
+                            _placeholder={{ color: "whiteAlpha.700" }}
+                            _focus={{ bg: "whiteAlpha.300" }}
+                        />
+                        <InputRightElement>
+                            <FaSearch color="white" opacity={0.7} />
+                        </InputRightElement>
+                    </InputGroup>
 
-                {/* Notification Icon */}
-                <i className="pi pi-bell p-text-secondary text-xl cursor-pointer text-slate-950 dark:text-slate-100" />
+                    {/* Dark/Light Mode Switch */}
+                    <HStack spacing={2}>
+                        {darkMode ? <FaMoon color="white" /> : <FaSun color="white" />}
+                        <Switch isChecked={darkMode} onChange={setDarkMode} colorScheme="yellow" size="md" />
+                    </HStack>
 
-                {/* User Profile */}
-                <div className="flex items-center space-x-3 cursor-pointer">
-                    <img 
-                        src="https://placehold.co/40x40/E2E8F0/475569?text=A" 
-                        className="w-10 h-10 rounded-full" 
-                        alt="Admin"
-                        onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/40x40/E2E8F0/475569?text=A'; }}
+                    {/* Notification Icon */}
+                    <IconButton
+                        icon={<FaBell />}
+                        variant="ghost"
+                        color="white"
+                        _hover={{ color: "yellow.300", bg: "whiteAlpha.200" }}
+                        aria-label="Notifications"
                     />
-                    <div className="hidden md:block">
-                        {/* This data will eventually come from your Zustand store */}
-                        <p className="font-semibold text-sm dark:text-slate-100">Alex Turner</p>
-                        <p className="text-xs text-slate-600 dark:text-slate-300">Administrator</p>
-                    </div>
-                </div>
-            </div>
-        </header>
-    );
-};
 
-export default Header;
+                    {/* User Profile */}
+                    <HStack spacing={3} cursor="pointer">
+                        <Avatar
+                            size="sm"
+                            name={user?.username || "User"}
+                            src={`https://ui-avatars.com/api/?name=${user?.username || "User"}&background=random&color=fff&size=40`}
+                            border="2px solid"
+                            borderColor="whiteAlpha.300"
+                        />
+                        <VStack spacing={0} align="start" display={{ base: "none", md: "flex" }}>
+                            <Text fontSize="sm" fontWeight="semibold" color="white">
+                                {user?.username || "User"}
+                            </Text>
+                            <Badge colorScheme={getRoleBadgeColor(user?.role)} size="sm">
+                                {user?.role || "Employee"}
+                            </Badge>
+                        </VStack>
+                    </HStack>
+                </HStack>
+            </Flex>
+        </Box>
+    )
+}
+
+export default Header
