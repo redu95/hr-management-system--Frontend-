@@ -34,7 +34,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
             "/leave": user?.role === "Employee" ? "My Leave" : "Leave Management",
             "/reports": "Reports",
             "/settings": "Settings",
-            "/register": "Register User",
+            "/register": "Register Employee",
         }
         return titles[pathname] || "HRMS"
     }

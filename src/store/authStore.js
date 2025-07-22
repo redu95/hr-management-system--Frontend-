@@ -23,6 +23,23 @@ const decodeToken = (token) => {
     }
 }
 
+// Helper function to normalize role names
+const normalizeRole = (role) => {
+    if (!role) return "Employee"
+
+    const roleString = role.toString().toLowerCase()
+
+    // Map different role variations to standard format
+    const roleMap = {
+        ceo: "CEO",
+        hr: "HR",
+        manager: "Manager",
+        employee: "Employee",
+    }
+
+    return roleMap[roleString] || "Employee"
+}
+
 const useAuthStore = create(
     persist(
         (set, get) => ({
@@ -85,7 +102,7 @@ const useAuthStore = create(
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
-                            email: emailOrUsername, // Backend expects 'identifier'
+                            identifier: emailOrUsername, // Backend expects 'identifier'
                             password: password,
                         }),
                     })
@@ -140,11 +157,7 @@ const useAuthStore = create(
                         id: decodedToken.user_id,
                         username: decodedToken.username || data.username || emailOrUsername,
                         email: decodedToken.email || data.email,
-                        role:
-                            (decodedToken.role || data.role || "Employee").toLowerCase() === "employee"
-                                ? "Employee"
-                                : (decodedToken.role || data.role || "Employee").charAt(0).toUpperCase() +
-                                (decodedToken.role || data.role || "Employee").slice(1).toLowerCase(),
+                        role: normalizeRole(decodedToken.role || data.role || "Employee"),
                     }
 
                     console.log("👤 [AUTH] User object created:", user)
@@ -350,7 +363,12 @@ const useAuthStore = create(
 
                         if (!isExpired) {
                             try {
-                                const user = JSON.parse(storedUser)
+                                const storedUserData = JSON.parse(storedUser)
+                                // Normalize the role when restoring from storage
+                                const user = {
+                                    ...storedUserData,
+                                    role: normalizeRole(storedUserData.role),
+                                }
                                 console.log("👤 [AUTH] Restoring user from storage:", user)
 
                                 set({
