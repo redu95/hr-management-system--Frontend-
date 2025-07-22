@@ -7,6 +7,7 @@ import { Dropdown } from 'primereact/dropdown';
 import { InputSwitch } from 'primereact/inputswitch';
 import { Calendar } from 'primereact/calendar';
 import EmployeeTable from '../components/common/EmployeeTable'; // Adjust path if needed
+import ConfirmationDialog from '../components/common/ConfirmationDialog';
 
 const EmployeesPage = () => {
         const [showAddModal, setShowAddModal] = useState(false);
@@ -16,6 +17,9 @@ const EmployeesPage = () => {
         const [departments, setDepartments] = useState([]);
         const [loading, setLoading] = useState(true);
         const toast = useRef(null);
+        const [employees, setEmployees] = useState([]);
+        const [showDeleteModal, setShowDeleteModal] = useState(false);
+        const [employeeToDelete, setEmployeeToDelete] = useState(null);
     // Fetch departments for dropdown
         useEffect(() => {
             const fetchDepartments = async () => {
@@ -97,9 +101,44 @@ const EmployeesPage = () => {
         }
         setAddLoading(false);
     };
+
+    const handleDeleteClick = (employeeId) => {
+        setEmployeeToDelete(employeeId);
+        setShowDeleteModal(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/employees/${employeeToDelete}/`, {
+                method: 'DELETE',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            });
+            if (res.ok) {
+                toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Employee deleted!' });
+                // Refresh employee list
+                const empRes = await fetch(`${import.meta.env.VITE_BASE_URL}/api/employees`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                });
+                const empData = await empRes.json();
+                let results = empData.results || empData;
+                setEmployees(Array.isArray(results) ? results : []);
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete employee.' });
+            }
+        } catch (err) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete employee.' });
+        } finally {
+            setShowDeleteModal(false);
+            setEmployeeToDelete(null);
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="p-4 sm:p-8">
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg transition-colors duration-300">
+            <div className="bg-white pb-11 dark:bg-slate-800 p-6 rounded-xl shadow-lg transition-colors duration-300">
                 {/* Page Header */}
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
                     <div>
@@ -215,8 +254,14 @@ const EmployeesPage = () => {
                 </Dialog>
 
                 {/* Employee Table */}
-                <EmployeeTable />
+                <EmployeeTable onDelete={handleDeleteClick} />
             </div>
+            <ConfirmationDialog
+                visible={showDeleteModal}
+                onHide={() => setShowDeleteModal(false)}
+                onConfirm={handleConfirmDelete}
+                message="Are you sure you want to delete this employee?"
+            />
         </div>
     );
 };
