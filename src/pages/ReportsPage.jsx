@@ -215,6 +215,8 @@ const SalaryDistributionChart = () => {
 const ReportsPage = () => {
     const cardBg = useColorModeValue("white", "gray.800")
     const textColor = useColorModeValue("gray.600", "gray.300")
+    const headingColor = useColorModeValue("gray.800", "gray.100")
+    const borderColor = useColorModeValue("gray.200", "gray.700") // New border color
 
     return (
         <Container maxW="7xl" py={8}>
@@ -240,57 +242,73 @@ const ReportsPage = () => {
                 {/* Executive Summary Section */}
                 <Card bg={cardBg} shadow="lg" mb={6}>
                     <CardBody p={8}>
-                        <Heading size="lg" mb={6} color={useColorModeValue("gray.800", "gray.100")}>
+                        <Heading size="lg" mb={6} color={headingColor}>
                             Executive Summary
                         </Heading>
 
                         <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={8}>
                             {/* Headcount Growth Chart */}
                             <GridItem>
-                                <Box>
-                                    <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
-                                        Headcount Growth (YTD)
-                                    </Heading>
-                                    <Box h="300px">
-                                        <HeadcountGrowthChart />
-                                    </Box>
-                                </Box>
+                                <Card bg={cardBg} shadow="md" borderWidth="1px" borderColor={borderColor}>
+                                    {" "}
+                                    {/* Added border */}
+                                    <CardBody p={6}>
+                                        <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
+                                            Headcount Growth (YTD)
+                                        </Heading>
+                                        <Box h="300px">
+                                            <HeadcountGrowthChart />
+                                        </Box>
+                                    </CardBody>
+                                </Card>
                             </GridItem>
 
                             {/* Employee Diversity Chart */}
                             <GridItem>
-                                <Box>
-                                    <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
-                                        Employee Diversity by Department
-                                    </Heading>
-                                    <Box h="300px">
-                                        <EmployeeDiversityChart />
-                                    </Box>
-                                </Box>
+                                <Card bg={cardBg} shadow="md" borderWidth="1px" borderColor={borderColor}>
+                                    {" "}
+                                    {/* Added border */}
+                                    <CardBody p={6}>
+                                        <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
+                                            Employee Diversity by Department
+                                        </Heading>
+                                        <Box h="300px">
+                                            <EmployeeDiversityChart />
+                                        </Box>
+                                    </CardBody>
+                                </Card>
                             </GridItem>
 
                             {/* Turnover Rate Chart */}
                             <GridItem>
-                                <Box>
-                                    <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
-                                        Quarterly Turnover Rate
-                                    </Heading>
-                                    <Box h="300px">
-                                        <TurnoverRateChart />
-                                    </Box>
-                                </Box>
+                                <Card bg={cardBg} shadow="md" borderWidth="1px" borderColor={borderColor}>
+                                    {" "}
+                                    {/* Added border */}
+                                    <CardBody p={6}>
+                                        <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
+                                            Quarterly Turnover Rate
+                                        </Heading>
+                                        <Box h="300px">
+                                            <TurnoverRateChart />
+                                        </Box>
+                                    </CardBody>
+                                </Card>
                             </GridItem>
 
                             {/* Salary Distribution Chart */}
                             <GridItem>
-                                <Box>
-                                    <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
-                                        Salary Distribution by Role
-                                    </Heading>
-                                    <Box h="300px">
-                                        <SalaryDistributionChart />
-                                    </Box>
-                                </Box>
+                                <Card bg={cardBg} shadow="md" borderWidth="1px" borderColor={borderColor}>
+                                    {" "}
+                                    {/* Added border */}
+                                    <CardBody p={6}>
+                                        <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
+                                            Salary Distribution by Role
+                                        </Heading>
+                                        <Box h="300px">
+                                            <SalaryDistributionChart />
+                                        </Box>
+                                    </CardBody>
+                                </Card>
                             </GridItem>
                         </Grid>
                     </CardBody>
