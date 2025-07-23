@@ -19,6 +19,7 @@ import {
 } from "@chakra-ui/react"
 import { FaSearch, FaBell, FaSun, FaMoon, FaBars } from "react-icons/fa"
 import useAuthStore from "../../store/authStore"
+import { Link } from 'react-router-dom';
 
 const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
     const location = useLocation()
@@ -35,6 +36,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
             "/reports": "Reports",
             "/settings": "Settings",
             "/register": "Register Employee",
+            "/profile": "Profile",
         }
         return titles[pathname] || "HRMS"
     }
@@ -97,11 +99,12 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
                         icon={<FaBell />}
                         variant="ghost"
                         color="white"
-                        _hover={{ color: "yellow.300", bg: "whiteAlpha.200" }}
+                        _hover={{ color: "purple.500", bg: "whiteAlpha.200" }}
                         aria-label="Notifications"
                     />
 
                     {/* User Profile */}
+                    <Link to="/profile">
                     <HStack spacing={3} cursor="pointer">
                         <Avatar
                             size="sm"
@@ -119,6 +122,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
                             </Badge>
                         </VStack>
                     </HStack>
+                    </Link>
                 </HStack>
             </Flex>
         </Box>

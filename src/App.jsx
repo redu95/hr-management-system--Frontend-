@@ -15,6 +15,7 @@ import RequireAuth from "./components/common/RequireAuth"
 import DepartmentsPage from "./pages/DepartmentsPage"
 import useAuthStore from "./store/authStore"
 import { BeatLoader } from "react-spinners"
+import ProfilePage from "./pages/ProfilePage"
 
 const queryClient = new QueryClient()
 
@@ -103,6 +104,15 @@ function App() {
               element={
                 <RequireAuth requiredPermission="canManageSettings">
                   <Settings />
+                </RequireAuth>
+              }
+            />
+
+            <Route
+              path="/profile"
+              element={
+                <RequireAuth requiredPermission="canManageSettings">
+                  <ProfilePage />
                 </RequireAuth>
               }
             />
