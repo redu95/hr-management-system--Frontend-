@@ -24,7 +24,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
     const location = useLocation()
     const { user } = useAuthStore()
 
-    const bgGradient = useColorModeValue("linear(to-r, blue.500, purple.600)", "linear(to-r, blue.600, purple.700)")
+    const bgGradient = useColorModeValue("linear(to-r, purple.600, purple.900)", "linear(to-r, blue.600, purple.700)")
 
     const getPageTitle = (pathname) => {
         const titles = {
