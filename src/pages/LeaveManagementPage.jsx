@@ -1,10 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Button } from "primereact/button"
-import { Tag } from "primereact/tag"
+import { useState, useEffect } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Toast } from "primereact/toast"
 import {
     Box,
     Heading,
@@ -37,6 +34,18 @@ import {
     StatNumber,
     StatHelpText,
     Select,
+    Modal,
+    ModalOverlay,
+    ModalContent,
+    ModalHeader,
+    ModalFooter,
+    ModalBody,
+    ModalCloseButton,
+    FormControl,
+    FormLabel,
+    Textarea,
+    Container,
+    Button,
 } from "@chakra-ui/react"
 import { motion } from "framer-motion"
 import {
@@ -59,8 +68,7 @@ const MotionBox = motion(Box)
 
 const LeaveManagementPage = () => {
     const queryClient = useQueryClient()
-    const toast = useRef(null)
-    const chakraToast = useToast()
+    const chakraToast = useToast() // Use Chakra UI's toast
     const { isOpen: isAddOpen, onOpen: onAddOpen, onClose: onAddClose } = useDisclosure()
     const { isOpen: isViewOpen, onOpen: onViewOpen, onClose: onViewClose } = useDisclosure()
     const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
@@ -68,7 +76,21 @@ const LeaveManagementPage = () => {
     const { user } = useAuthStore()
 
     const cardBg = useColorModeValue("white", "gray.800")
-    const borderColor = useColorModeValue("gray.200", "gray.600")
+    const textColor = useColorModeValue("gray.600", "gray.300")
+    const headingColor = useColorModeValue("gray.800", "gray.100")
+    const hoverBg = useColorModeValue("gray.50", "gray.700")
+    const statusColors = {
+        Approved: useColorModeValue("green", "green.500"),
+        Denied: useColorModeValue("red", "red.500"),
+        Pending: useColorModeValue("yellow", "yellow.500"),
+        default: useColorModeValue("gray", "gray.500"),
+    }
+    const statusIcons = {
+        Approved: <FaCheck />,
+        Denied: <FaTimes />,
+        Pending: <FaClock />,
+        default: <FaHourglass />,
+    }
 
     // Check if user can manage leave requests
     const canManageLeave = ["CEO", "HR", "Manager"].includes(user?.role)
@@ -80,26 +102,14 @@ const LeaveManagementPage = () => {
         reason: "",
     })
 
-    // State for available leave types (replace with API call if needed)
-    const [leaveTypes, setLeaveTypes] = useState([
-        { label: "Vacation", value: "Vacation" },
-        { label: "Sick Leave", value: "Sick Leave" },
-        { label: "Personal", value: "Personal" },
-    ])
-
-    // State for employees (replace with API call if needed)
+    // State for employees
     const [employees, setEmployees] = useState([])
     const [searchTerm, setSearchTerm] = useState("")
     const [filterStatus, setFilterStatus] = useState("")
     const [selectedRequest, setSelectedRequest] = useState(null)
 
     // Fetch leave requests
-    const {
-        isLoading,
-        isError,
-        data: leaveRequests,
-        error,
-    } = useQuery({
+    const { isLoading, data: leaveRequests } = useQuery({
         queryKey: ["leaveRequests"],
         queryFn: ApiService.getLeaveRequests,
     })
@@ -108,7 +118,7 @@ const LeaveManagementPage = () => {
     const { data: fetchedEmployees } = useQuery({
         queryKey: ["employees"],
         queryFn: ApiService.getEmployees,
-        enabled: canManageLeave,
+        enabled: canManageLeave, // Only fetch employees if user can manage leave
     })
 
     useEffect(() => {
@@ -213,7 +223,7 @@ const LeaveManagementPage = () => {
     const handleApprove = (leaveRequest) => {
         updateLeaveRequestMutation.mutate({
             id: leaveRequest.id,
-            data: { status: "APPROVED" }, // Send "APPROVED" status
+            data: { status: "Approved" }, // Send "Approved" status
         })
     }
 
@@ -221,7 +231,7 @@ const LeaveManagementPage = () => {
     const handleDeny = (leaveRequest) => {
         updateLeaveRequestMutation.mutate({
             id: leaveRequest.id,
-            data: { status: "DENIED" }, // Send "DENIED" status
+            data: { status: "Denied" }, // Send "Denied" status
         })
     }
 
@@ -230,71 +240,9 @@ const LeaveManagementPage = () => {
         deleteLeaveRequestMutation.mutate(selectedRequest.id)
     }
 
-    // Template for the Employee column
-    const employeeBodyTemplate = (rowData) => {
-        const employee = employees.find((emp) => emp.id === rowData.employee) || {}
-        return (
-            <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold ">
-                    {employee.first_name.charAt(0).toUpperCase()}
-                </div>
-                <span className="font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                    {`${employee.first_name} ${employee.last_name}`}
-                </span>
-            </div>
-        )
-    }
-
-    // Template for the Leave Type column with colored tags
-    const leaveTypeBodyTemplate = (rowData) => {
-        const severityMap = {
-            Vacation: "info",
-            "Sick Leave": "warning",
-            Personal: "success",
-        }
-        return <Tag value={rowData.reason} severity={severityMap[rowData.reason]} />
-    }
-
-    // Template for the Actions column
-    const actionBodyTemplate = (rowData) => {
-        return (
-            <div className="flex items-center space-x-2">
-                <Button
-                    label="Approve"
-                    className="p-button-sm p-button-success p-button-text dark:text-slate-100"
-                    onClick={() => handleApprove(rowData)}
-                />
-                <Button
-                    label="Deny"
-                    className="p-button-sm p-button-danger p-button-text "
-                    onClick={() => handleDeny(rowData)}
-                />
-                <IconButton
-                    icon={<FaEye />}
-                    size="sm"
-                    variant="ghost"
-                    colorScheme="blue"
-                    onClick={() => onViewOpen(rowData)}
-                    aria-label="View request"
-                />
-                {canManageLeave && (
-                    <IconButton
-                        icon={<FaTrash />}
-                        size="sm"
-                        variant="ghost"
-                        colorScheme="red"
-                        onClick={() => onDeleteOpen(rowData)}
-                        aria-label="Delete request"
-                    />
-                )}
-            </div>
-        )
-    }
-
     // Get leave statistics
     const getLeaveStats = () => {
-        // Ensure leaveRequests is an array before accessing its properties
-        const requests = leaveRequests || []
+        const requests = leaveRequests?.results || [] // Ensure leaveRequests is an array
         const total = requests.length
         const pending = requests.filter((req) => req.status === "Pending").length
         const approved = requests.filter((req) => req.status === "Approved").length
@@ -306,7 +254,7 @@ const LeaveManagementPage = () => {
     const stats = getLeaveStats()
 
     // Filter leave requests
-    const filteredRequests = (leaveRequests || []).filter((request) => {
+    const filteredRequests = (leaveRequests?.results || []).filter((request) => {
         const employee = employees.find((emp) => emp.id === request.employee) || {}
         const employeeName = `${employee.first_name || ""} ${employee.last_name || ""}`.toLowerCase()
 
@@ -323,312 +271,447 @@ const LeaveManagementPage = () => {
     const calculateDays = (startDate, endDate) => {
         const start = new Date(startDate)
         const end = new Date(endDate)
-        const diffTime = Math.abs(end - start)
+        const diffTime = Math.abs(end.getTime() - start.getTime())
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
         return diffDays
     }
 
     // Get status color
     const getStatusColor = (status) => {
-        switch (status) {
-            case "Approved":
-                return "green"
-            case "Denied":
-                return "red"
-            case "Pending":
-                return "yellow"
-            default:
-                return "gray"
-        }
+        return statusColors[status] || statusColors.default
     }
 
     // Get status icon
     const getStatusIcon = (status) => {
-        switch (status) {
-            case "Approved":
-                return <FaCheck />
-            case "Denied":
-                return <FaTimes />
-            case "Pending":
-                return <FaClock />
-            default:
-                return <FaHourglass />
-        }
+        return statusIcons[status] || statusIcons.default
     }
 
     if (isLoading) {
         return (
-            <div className="p-4 sm:p-8">
-                <Toast ref={toast} />
-                <div className="flex justify-center items-center h-400px">
-                    <VStack spacing={4}>
-                        <Spinner size="xl" color="blue.500" />
-                        <Text>Loading leave requests...</Text>
-                    </VStack>
-                </div>
-            </div>
+            <Container maxW="7xl" py={8}>
+                <VStack spacing={4} justify="center" align="center" h="400px">
+                    <Spinner size="xl" color="blue.500" />
+                    <Text>Loading leave requests...</Text>
+                </VStack>
+            </Container>
         )
     }
 
     return (
-        <div className="p-4 sm:p-8">
-            <Toast ref={toast} />
-            {/* Header */}
-            <VStack spacing={6} mb={8}>
-                <HStack spacing={4} w="full" justify="space-between">
-                    <VStack align="start" spacing={1}>
-                        <Heading size="xl" color="blue.600">
-                            <HStack>
-                                <FaCalendarAlt />
-                                <Text>{canManageLeave ? "Leave Management" : "My Leave Requests"}</Text>
-                            </HStack>
+        <Container maxW="7xl" py={8}>
+            <MotionBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                {/* Header */}
+                <VStack spacing={6} mb={8}>
+                    <HStack spacing={4} w="full" justify="space-between">
+                        <VStack align="start" spacing={1}>
+                            <Heading size="xl" color="blue.600">
+                                <HStack>
+                                    <FaCalendarAlt />
+                                    <Text>{canManageLeave ? "Leave Management" : "My Leave Requests"}</Text>
+                                </HStack>
+                            </Heading>
+                            <Text color={textColor}>
+                                {canManageLeave ? "Manage employee leave requests" : "Track your leave requests and balance"}
+                            </Text>
+                        </VStack>
+                        <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={onAddOpen}>
+                            Request Leave
+                        </Button>
+                    </HStack>
+
+                    {/* Statistics Cards */}
+                    <Grid templateColumns={{ base: "1fr", md: "repeat(4, 1fr)" }} gap={6} w="full">
+                        <Card bg={cardBg} shadow="md">
+                            <CardBody>
+                                <Stat>
+                                    <StatLabel color={textColor}>Total Requests</StatLabel>
+                                    <StatNumber color="blue.500">{stats.total}</StatNumber>
+                                    <StatHelpText color={textColor}>
+                                        <HStack>
+                                            <FaCalendarAlt />
+                                            <Text>All time</Text>
+                                        </HStack>
+                                    </StatHelpText>
+                                </Stat>
+                            </CardBody>
+                        </Card>
+                        <Card bg={cardBg} shadow="md">
+                            <CardBody>
+                                <Stat>
+                                    <StatLabel color={textColor}>Pending</StatLabel>
+                                    <StatNumber color="yellow.500">{stats.pending}</StatNumber>
+                                    <StatHelpText color={textColor}>
+                                        <HStack>
+                                            <FaClock />
+                                            <Text>Awaiting approval</Text>
+                                        </HStack>
+                                    </StatHelpText>
+                                </Stat>
+                            </CardBody>
+                        </Card>
+                        <Card bg={cardBg} shadow="md">
+                            <CardBody>
+                                <Stat>
+                                    <StatLabel color={textColor}>Approved</StatLabel>
+                                    <StatNumber color="green.500">{stats.approved}</StatNumber>
+                                    <StatHelpText color={textColor}>
+                                        <HStack>
+                                            <FaCalendarCheck />
+                                            <Text>Approved requests</Text>
+                                        </HStack>
+                                    </StatHelpText>
+                                </Stat>
+                            </CardBody>
+                        </Card>
+                        <Card bg={cardBg} shadow="md">
+                            <CardBody>
+                                <Stat>
+                                    <StatLabel color={textColor}>Denied</StatLabel>
+                                    <StatNumber color="red.500">{stats.denied}</StatNumber>
+                                    <StatHelpText color={textColor}>
+                                        <HStack>
+                                            <FaCalendarTimes />
+                                            <Text>Denied requests</Text>
+                                        </HStack>
+                                    </StatHelpText>
+                                </Stat>
+                            </CardBody>
+                        </Card>
+                    </Grid>
+
+                    {/* Filters */}
+                    <Card w="full" bg={cardBg} shadow="md">
+                        <CardBody>
+                            <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={4}>
+                                <GridItem>
+                                    <InputGroup>
+                                        <InputLeftElement pointerEvents="none">
+                                            <FaSearch color="gray.300" />
+                                        </InputLeftElement>
+                                        <Input
+                                            placeholder={canManageLeave ? "Search by employee name or reason..." : "Search leave requests..."}
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </InputGroup>
+                                </GridItem>
+                                <GridItem>
+                                    <Select
+                                        placeholder="Filter by Status"
+                                        value={filterStatus}
+                                        onChange={(e) => setFilterStatus(e.target.value)}
+                                    >
+                                        <option value="Pending">Pending</option>
+                                        <option value="Approved">Approved</option>
+                                        <option value="Denied">Denied</option>
+                                    </Select>
+                                </GridItem>
+                            </Grid>
+                        </CardBody>
+                    </Card>
+                </VStack>
+
+                {/* Leave Requests Table */}
+                <Card bg={cardBg} shadow="md">
+                    <CardHeader>
+                        <Heading size="md" color={headingColor}>
+                            Leave Requests
                         </Heading>
-                        <Text color="gray.600" _dark={{ color: "gray.300" }}>
-                            {canManageLeave ? "Manage employee leave requests" : "Track your leave requests and balance"}
-                        </Text>
-                    </VStack>
-                    <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={onAddOpen}>
-                        Request Leave
-                    </Button>
-                </HStack>
+                    </CardHeader>
+                    <CardBody p={0}>
+                        {filteredRequests.length === 0 ? (
+                            <Box p={8} textAlign="center">
+                                <VStack spacing={4}>
+                                    <FaCalendarAlt size="48" color={textColor} />
+                                    <Text fontSize="lg" color={textColor}>
+                                        No leave requests found
+                                    </Text>
+                                    <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={onAddOpen}>
+                                        Create Your First Request
+                                    </Button>
+                                </VStack>
+                            </Box>
+                        ) : (
+                            <Box overflowX="auto">
+                                <Table variant="simple">
+                                    <Thead bg={hoverBg}>
+                                        <Tr>
+                                            {canManageLeave && <Th color={textColor}>Employee</Th>}
+                                            <Th color={textColor}>Leave Period</Th>
+                                            <Th color={textColor}>Duration</Th>
+                                            <Th color={textColor}>Reason</Th>
+                                            <Th color={textColor}>Status</Th>
+                                            <Th color={textColor}>Submitted</Th>
+                                            <Th color={textColor}>Actions</Th>
+                                        </Tr>
+                                    </Thead>
+                                    <Tbody>
+                                        {filteredRequests.map((request) => {
+                                            const employee = employees.find((emp) => emp.id === request.employee) || {}
+                                            const days = calculateDays(request.start_date, request.end_date)
 
-                {/* Statistics Cards */}
-                <Grid templateColumns={{ base: "1fr", md: "repeat(4, 1fr)" }} gap={6} w="full">
-                    <Card bg={cardBg}>
-                        <CardBody>
-                            <Stat>
-                                <StatLabel>Total Requests</StatLabel>
-                                <StatNumber color="blue.500">{stats.total}</StatNumber>
-                                <StatHelpText>
-                                    <HStack>
-                                        <FaCalendarAlt />
-                                        <Text>All time</Text>
-                                    </HStack>
-                                </StatHelpText>
-                            </Stat>
-                        </CardBody>
-                    </Card>
-                    <Card bg={cardBg}>
-                        <CardBody>
-                            <Stat>
-                                <StatLabel>Pending</StatLabel>
-                                <StatNumber color="yellow.500">{stats.pending}</StatNumber>
-                                <StatHelpText>
-                                    <HStack>
-                                        <FaClock />
-                                        <Text>Awaiting approval</Text>
-                                    </HStack>
-                                </StatHelpText>
-                            </Stat>
-                        </CardBody>
-                    </Card>
-                    <Card bg={cardBg}>
-                        <CardBody>
-                            <Stat>
-                                <StatLabel>Approved</StatLabel>
-                                <StatNumber color="green.500">{stats.approved}</StatNumber>
-                                <StatHelpText>
-                                    <HStack>
-                                        <FaCalendarCheck />
-                                        <Text>Approved requests</Text>
-                                    </HStack>
-                                </StatHelpText>
-                            </Stat>
-                        </CardBody>
-                    </Card>
-                    <Card bg={cardBg}>
-                        <CardBody>
-                            <Stat>
-                                <StatLabel>Denied</StatLabel>
-                                <StatNumber color="red.500">{stats.denied}</StatNumber>
-                                <StatHelpText>
-                                    <HStack>
-                                        <FaCalendarTimes />
-                                        <Text>Denied requests</Text>
-                                    </HStack>
-                                </StatHelpText>
-                            </Stat>
-                        </CardBody>
-                    </Card>
-                </Grid>
-
-                {/* Filters */}
-                <Card w="full" bg={cardBg}>
-                    <CardBody>
-                        <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={4}>
-                            <GridItem>
-                                <InputGroup>
-                                    <InputLeftElement pointerEvents="none">
-                                        <FaSearch color="gray.300" />
-                                    </InputLeftElement>
-                                    <Input
-                                        placeholder={canManageLeave ? "Search by employee name or reason..." : "Search leave requests..."}
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                    />
-                                </InputGroup>
-                            </GridItem>
-                            <GridItem>
-                                <Select
-                                    placeholder="Filter by Status"
-                                    value={filterStatus}
-                                    onChange={(e) => setFilterStatus(e.target.value)}
-                                >
-                                    <option value="Pending">Pending</option>
-                                    <option value="Approved">Approved</option>
-                                    <option value="Denied">Denied</option>
-                                </Select>
-                            </GridItem>
-                        </Grid>
-                    </CardBody>
-                </Card>
-            </VStack>
-
-            {/* Leave Requests Table */}
-            <Card bg={cardBg}>
-                <CardHeader>
-                    <Heading size="md">Leave Requests</Heading>
-                </CardHeader>
-                <CardBody p={0}>
-                    {filteredRequests.length === 0 ? (
-                        <Box p={8} textAlign="center">
-                            <VStack spacing={4}>
-                                <FaCalendarAlt size="48" color="gray" />
-                                <Text fontSize="lg" color="gray.500">
-                                    No leave requests found
-                                </Text>
-                                <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={onAddOpen}>
-                                    Create Your First Request
-                                </Button>
-                            </VStack>
-                        </Box>
-                    ) : (
-                        <Box overflowX="auto">
-                            <Table variant="simple">
-                                <Thead bg="gray.50" _dark={{ bg: "gray.700" }}>
-                                    <Tr>
-                                        {canManageLeave && <Th>Employee</Th>}
-                                        <Th>Leave Period</Th>
-                                        <Th>Duration</Th>
-                                        <Th>Reason</Th>
-                                        <Th>Status</Th>
-                                        <Th>Submitted</Th>
-                                        <Th>Actions</Th>
-                                    </Tr>
-                                </Thead>
-                                <Tbody>
-                                    {filteredRequests.map((request) => {
-                                        const employee = employees.find((emp) => emp.id === request.employee) || {}
-                                        const days = calculateDays(request.start_date, request.end_date)
-
-                                        return (
-                                            <Tr key={request.id} _hover={{ bg: "gray.50", _dark: { bg: "gray.700" } }}>
-                                                {canManageLeave && (
-                                                    <Td>
-                                                        <HStack spacing={3}>
-                                                            <Avatar
-                                                                size="sm"
-                                                                name={`${employee.first_name} ${employee.last_name}`}
-                                                                src={`https://ui-avatars.com/api/?name=${employee.first_name}+${employee.last_name}&background=random`}
-                                                            />
-                                                            <VStack align="start" spacing={0}>
-                                                                <Text fontWeight="semibold">
-                                                                    {employee.first_name} {employee.last_name}
-                                                                </Text>
-                                                                <Text fontSize="sm" color="gray.500">
-                                                                    {employee.job_title}
-                                                                </Text>
-                                                            </VStack>
-                                                        </HStack>
-                                                    </Td>
-                                                )}
-                                                <Td>
-                                                    <VStack align="start" spacing={1}>
-                                                        <Text fontWeight="medium">
-                                                            {new Date(request.start_date).toLocaleDateString()} -{" "}
-                                                            {new Date(request.end_date).toLocaleDateString()}
-                                                        </Text>
-                                                        <Text fontSize="sm" color="gray.500">
-                                                            {new Date(request.start_date).toLocaleDateString("en-US", { weekday: "short" })} -{" "}
-                                                            {new Date(request.end_date).toLocaleDateString("en-US", { weekday: "short" })}
-                                                        </Text>
-                                                    </VStack>
-                                                </Td>
-                                                <Td>
-                                                    <Badge colorScheme="blue" variant="subtle">
-                                                        {days} {days === 1 ? "day" : "days"}
-                                                    </Badge>
-                                                </Td>
-                                                <Td>
-                                                    <Text noOfLines={2} maxW="200px">
-                                                        {request.reason || "No reason provided"}
-                                                    </Text>
-                                                </Td>
-                                                <Td>
-                                                    <Badge colorScheme={getStatusColor(request.status)} variant="subtle">
-                                                        <HStack spacing={1}>
-                                                            {getStatusIcon(request.status)}
-                                                            <Text>{request.status}</Text>
-                                                        </HStack>
-                                                    </Badge>
-                                                </Td>
-                                                <Td>
-                                                    <Text fontSize="sm">
-                                                        {request.created_at ? new Date(request.created_at).toLocaleDateString() : "N/A"}
-                                                    </Text>
-                                                </Td>
-                                                <Td>
-                                                    <HStack spacing={1}>
-                                                        <IconButton
-                                                            icon={<FaEye />}
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            colorScheme="blue"
-                                                            onClick={() => onViewOpen(request)}
-                                                            aria-label="View request"
-                                                        />
-                                                        {canManageLeave && request.status === "Pending" && (
-                                                            <>
-                                                                <IconButton
-                                                                    icon={<FaCheck />}
+                                            return (
+                                                <Tr key={request.id} _hover={{ bg: hoverBg }}>
+                                                    {canManageLeave && (
+                                                        <Td>
+                                                            <HStack spacing={3}>
+                                                                <Avatar
                                                                     size="sm"
-                                                                    variant="ghost"
-                                                                    colorScheme="green"
-                                                                    onClick={() => handleApprove(request)}
-                                                                    aria-label="Approve request"
+                                                                    name={`${employee.first_name} ${employee.last_name}`}
+                                                                    src={`https://ui-avatars.com/api/?name=${employee.first_name}+${employee.last_name}&background=random`}
                                                                 />
+                                                                <VStack align="start" spacing={0}>
+                                                                    <Text fontWeight="semibold" color={headingColor}>
+                                                                        {employee.first_name} {employee.last_name}
+                                                                    </Text>
+                                                                    <Text fontSize="sm" color={textColor}>
+                                                                        {employee.job_title}
+                                                                    </Text>
+                                                                </VStack>
+                                                            </HStack>
+                                                        </Td>
+                                                    )}
+                                                    <Td>
+                                                        <VStack align="start" spacing={1}>
+                                                            <Text fontWeight="medium" color={headingColor}>
+                                                                {new Date(request.start_date).toLocaleDateString()} -{" "}
+                                                                {new Date(request.end_date).toLocaleDateString()}
+                                                            </Text>
+                                                            <Text fontSize="sm" color={textColor}>
+                                                                {new Date(request.start_date).toLocaleDateString("en-US", { weekday: "short" })} -{" "}
+                                                                {new Date(request.end_date).toLocaleDateString("en-US", { weekday: "short" })}
+                                                            </Text>
+                                                        </VStack>
+                                                    </Td>
+                                                    <Td>
+                                                        <Badge colorScheme="blue" variant="subtle">
+                                                            {days} {days === 1 ? "day" : "days"}
+                                                        </Badge>
+                                                    </Td>
+                                                    <Td>
+                                                        <Text noOfLines={2} maxW="200px" color={headingColor}>
+                                                            {request.reason || "No reason provided"}
+                                                        </Text>
+                                                    </Td>
+                                                    <Td>
+                                                        <Badge colorScheme={getStatusColor(request.status)} variant="subtle">
+                                                            <HStack spacing={1}>
+                                                                {getStatusIcon(request.status)}
+                                                                <Text>{request.status}</Text>
+                                                            </HStack>
+                                                        </Badge>
+                                                    </Td>
+                                                    <Td>
+                                                        <Text fontSize="sm" color={textColor}>
+                                                            {request.created_at ? new Date(request.created_at).toLocaleDateString() : "N/A"}
+                                                        </Text>
+                                                    </Td>
+                                                    <Td>
+                                                        <HStack spacing={1}>
+                                                            <IconButton
+                                                                icon={<FaEye />}
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                colorScheme="blue"
+                                                                onClick={() => {
+                                                                    setSelectedRequest(request)
+                                                                    onViewOpen()
+                                                                }}
+                                                                aria-label="View request"
+                                                            />
+                                                            {canManageLeave && request.status === "Pending" && (
+                                                                <>
+                                                                    <IconButton
+                                                                        icon={<FaCheck />}
+                                                                        size="sm"
+                                                                        variant="ghost"
+                                                                        colorScheme="green"
+                                                                        onClick={() => handleApprove(request)}
+                                                                        aria-label="Approve request"
+                                                                    />
+                                                                    <IconButton
+                                                                        icon={<FaTimes />}
+                                                                        size="sm"
+                                                                        variant="ghost"
+                                                                        colorScheme="red"
+                                                                        onClick={() => handleDeny(request)}
+                                                                        aria-label="Deny request"
+                                                                    />
+                                                                </>
+                                                            )}
+                                                            {(request.status === "Pending" || canManageLeave) && (
                                                                 <IconButton
-                                                                    icon={<FaTimes />}
+                                                                    icon={<FaTrash />}
                                                                     size="sm"
                                                                     variant="ghost"
                                                                     colorScheme="red"
-                                                                    onClick={() => handleDeny(request)}
-                                                                    aria-label="Deny request"
+                                                                    onClick={() => {
+                                                                        setSelectedRequest(request)
+                                                                        onDeleteOpen()
+                                                                    }}
+                                                                    aria-label="Delete request"
                                                                 />
-                                                            </>
-                                                        )}
-                                                        {(request.status === "Pending" || canManageLeave) && (
-                                                            <IconButton
-                                                                icon={<FaTrash />}
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                colorScheme="red"
-                                                                onClick={() => onDeleteOpen(request)}
-                                                                aria-label="Delete request"
-                                                            />
-                                                        )}
-                                                    </HStack>
-                                                </Td>
-                                            </Tr>
-                                        )
-                                    })}
-                                </Tbody>
-                            </Table>
-                        </Box>
-                    )}
-                </CardBody>
-            </Card>
-        </div>
+                                                            )}
+                                                        </HStack>
+                                                    </Td>
+                                                </Tr>
+                                            )
+                                        })}
+                                    </Tbody>
+                                </Table>
+                            </Box>
+                        )}
+                    </CardBody>
+                </Card>
+            </MotionBox>
+
+            {/* Add Leave Request Modal */}
+            <Modal isOpen={isAddOpen} onClose={onAddClose} size="lg">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Request New Leave</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <VStack spacing={4}>
+                            <FormControl isRequired>
+                                <FormLabel>Start Date</FormLabel>
+                                <Input
+                                    type="date"
+                                    value={leaveRequestForm.start_date}
+                                    onChange={(e) => handleFormChange(e, "start_date")}
+                                />
+                            </FormControl>
+                            <FormControl isRequired>
+                                <FormLabel>End Date</FormLabel>
+                                <Input
+                                    type="date"
+                                    value={leaveRequestForm.end_date}
+                                    onChange={(e) => handleFormChange(e, "end_date")}
+                                />
+                            </FormControl>
+                            <FormControl isRequired>
+                                <FormLabel>Reason for Leave</FormLabel>
+                                <Textarea
+                                    value={leaveRequestForm.reason}
+                                    onChange={(e) => handleFormChange(e, "reason")}
+                                    placeholder="e.g., Vacation, Sick Leave, Personal"
+                                    rows={3}
+                                />
+                            </FormControl>
+                        </VStack>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button variant="ghost" mr={3} onClick={onAddClose}>
+                            Cancel
+                        </Button>
+                        <Button colorScheme="blue" onClick={handleRequestLeave} isLoading={createLeaveRequestMutation.isPending}>
+                            Submit Request
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            {/* View Leave Request Modal */}
+            <Modal isOpen={isViewOpen} onClose={onViewClose} size="lg">
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Leave Request Details</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        {selectedRequest && (
+                            <VStack spacing={4} align="stretch">
+                                <HStack spacing={4}>
+                                    <Avatar
+                                        size="lg"
+                                        name={`${employees.find((e) => e.id === selectedRequest.employee)?.first_name || ""} ${employees.find((e) => e.id === selectedRequest.employee)?.last_name || ""}`}
+                                        src={`https://ui-avatars.com/api/?name=${employees.find((e) => e.id === selectedRequest.employee)?.first_name || ""}+${employees.find((e) => e.id === selectedRequest.employee)?.last_name || ""}&background=random&size=128`}
+                                    />
+                                    <VStack align="start" spacing={0}>
+                                        <Heading size="md">
+                                            {employees.find((e) => e.id === selectedRequest.employee)?.first_name}{" "}
+                                            {employees.find((e) => e.id === selectedRequest.employee)?.last_name}
+                                        </Heading>
+                                        <Text fontSize="sm" color={textColor}>
+                                            {employees.find((e) => e.id === selectedRequest.employee)?.job_title}
+                                        </Text>
+                                        <Badge colorScheme={getStatusColor(selectedRequest.status)} mt={1}>
+                                            {selectedRequest.status}
+                                        </Badge>
+                                    </VStack>
+                                </HStack>
+
+                                <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                                    <Box>
+                                        <Text fontWeight="semibold" color={textColor} fontSize="sm">
+                                            START DATE
+                                        </Text>
+                                        <Text color={headingColor}>{new Date(selectedRequest.start_date).toLocaleDateString()}</Text>
+                                    </Box>
+                                    <Box>
+                                        <Text fontWeight="semibold" color={textColor} fontSize="sm">
+                                            END DATE
+                                        </Text>
+                                        <Text color={headingColor}>{new Date(selectedRequest.end_date).toLocaleDateString()}</Text>
+                                    </Box>
+                                    <Box>
+                                        <Text fontWeight="semibold" color={textColor} fontSize="sm">
+                                            DURATION
+                                        </Text>
+                                        <Text color={headingColor}>
+                                            {calculateDays(selectedRequest.start_date, selectedRequest.end_date)} days
+                                        </Text>
+                                    </Box>
+                                    <Box>
+                                        <Text fontWeight="semibold" color={textColor} fontSize="sm">
+                                            SUBMITTED ON
+                                        </Text>
+                                        <Text color={headingColor}>
+                                            {selectedRequest.created_at ? new Date(selectedRequest.created_at).toLocaleDateString() : "N/A"}
+                                        </Text>
+                                    </Box>
+                                </Grid>
+                                <Box>
+                                    <Text fontWeight="semibold" color={textColor} fontSize="sm">
+                                        REASON
+                                    </Text>
+                                    <Text color={headingColor}>{selectedRequest.reason || "No reason provided"}</Text>
+                                </Box>
+                            </VStack>
+                        )}
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button onClick={onViewClose}>Close</Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+
+            {/* Delete Confirmation Modal */}
+            <Modal isOpen={isDeleteOpen} onClose={onDeleteClose}>
+                <ModalOverlay />
+                <ModalContent>
+                    <ModalHeader>Delete Leave Request</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <Text>
+                            Are you sure you want to delete this leave request for{" "}
+                            <Text as="span" fontWeight="bold">
+                                {employees.find((e) => e.id === selectedRequest?.employee)?.first_name}{" "}
+                                {employees.find((e) => e.id === selectedRequest?.employee)?.last_name}
+                            </Text>{" "}
+                            from {selectedRequest?.start_date} to {selectedRequest?.end_date}? This action cannot be undone.
+                        </Text>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button variant="ghost" mr={3} onClick={onDeleteClose}>
+                            Cancel
+                        </Button>
+                        <Button colorScheme="red" onClick={handleDelete} isLoading={deleteLeaveRequestMutation.isPending}>
+                            Delete
+                        </Button>
+                    </ModalFooter>
+                </ModalContent>
+            </Modal>
+        </Container>
     )
 }
 

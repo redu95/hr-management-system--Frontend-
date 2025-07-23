@@ -1,198 +1,303 @@
-// src/pages/ReportsPage.jsx
-import React from 'react';
-import { Button } from 'primereact/button';
-import { useThemeStore } from '../store/themeStore'; // Assuming your theme store is here
+"use client"
+import {
+    Box,
+    Button,
+    Container,
+    Heading,
+    Text,
+    VStack,
+    HStack,
+    Card,
+    CardBody,
+    Grid,
+    GridItem,
+    useColorModeValue,
+} from "@chakra-ui/react"
+import { motion } from "framer-motion"
+import { FaChartBar, FaDownload } from "react-icons/fa"
 
 // Import Chart.js components
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { Bar, Line, Doughnut } from 'react-chartjs-2';
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    LineElement,
+    PointElement,
+    ArcElement,
+    Title,
+    Tooltip,
+    Legend,
+} from "chart.js"
+import { Bar, Line, Doughnut } from "react-chartjs-2"
 
-// Register all the components you will use across the charts
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend
-);
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend)
 
-// --- Reusable Chart Card Component ---
-const ChartCard = ({ title, children }) => (
-    <div className="bg-slate-50 dark:bg-slate-700 p-4 rounded-lg h-80 flex flex-col transition-colors duration-300">
-        <h4 className="font-semibold text-slate-700 dark:text-slate-100 mb-2">{title}</h4>
-        <div className="relative flex-grow">
-            {children}
-        </div>
-    </div>
-);
+const MotionBox = motion(Box)
 
-// --- Individual Chart Components ---
+// Individual Chart Components
+const HeadcountGrowthChart = () => {
+    const gridColor = useColorModeValue("#e2e8f0", "#4a5568")
+    const tickColor = useColorModeValue("#64748b", "#a0aec0")
 
-const HeadcountGrowthChart = ({ isDarkMode }) => {
     const options = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+            legend: { display: false },
+            title: { display: false },
+        },
         scales: {
             y: {
-                ticks: { color: isDarkMode ? '#cbd5e1' : '#64748b' },
-                grid: { color: isDarkMode ? '#475569' : '#e2e8f0' }
+                beginAtZero: false,
+                min: 220,
+                max: 250,
+                ticks: {
+                    color: tickColor,
+                    stepSize: 5,
+                },
+                grid: { color: gridColor },
             },
             x: {
-                ticks: { color: isDarkMode ? '#cbd5e1' : '#64748b' },
-                grid: { display: false }
-            }
-        }
-    };
-    const data = {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-        datasets: [{
-            label: 'Headcount',
-            data: [220, 225, 230, 238, 245, 248],
-            borderColor: '#0ea5e9', // sky-500
-            backgroundColor: 'rgba(14, 165, 233, 0.2)',
-            fill: true,
-            tension: 0.4,
-        }],
-    };
-    return <Line options={options} data={data} />;
-};
+                ticks: { color: tickColor },
+                grid: { display: false },
+            },
+        },
+    }
 
-const EmployeeDiversityChart = ({ isDarkMode }) => {
+    const data = {
+        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        datasets: [
+            {
+                label: "Headcount",
+                data: [220, 225, 230, 238, 245, 248],
+                borderColor: "#0ea5e9",
+                backgroundColor: "rgba(14, 165, 233, 0.1)",
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: "#0ea5e9",
+                pointBorderColor: "#0ea5e9",
+                pointRadius: 4,
+            },
+        ],
+    }
+
+    return <Line options={options} data={data} />
+}
+
+const EmployeeDiversityChart = () => {
     const options = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                position: 'bottom',
-                labels: { color: isDarkMode ? '#cbd5e1' : '#64748b' }
-            }
-        }
-    };
-    const data = {
-        labels: ['Technology', 'Marketing', 'Sales', 'Finance', 'Support'],
-        datasets: [{
-            data: [85, 45, 55, 30, 60],
-            backgroundColor: ['#0ea5e9', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'],
-            borderColor: isDarkMode ? '#475569' : '#ffffff',
-            borderWidth: 2,
-        }],
-    };
-    return <Doughnut options={options} data={data} />;
-};
+                position: "bottom",
+                labels: {
+                    color: useColorModeValue("#64748b", "#a0aec0"),
+                    usePointStyle: true,
+                    padding: 20,
+                },
+            },
+        },
+    }
 
-const TurnoverRateChart = ({ isDarkMode }) => {
+    const data = {
+        labels: ["Technology", "Marketing", "Sales", "Finance", "Support"],
+        datasets: [
+            {
+                data: [85, 45, 55, 30, 60],
+                backgroundColor: ["#0ea5e9", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6"],
+                borderWidth: 0,
+                cutout: "50%",
+            },
+        ],
+    }
+
+    return <Doughnut options={options} data={data} />
+}
+
+const TurnoverRateChart = () => {
+    const gridColor = useColorModeValue("#e2e8f0", "#4a5568")
+    const tickColor = useColorModeValue("#64748b", "#a0aec0")
+
     const options = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+            legend: { display: false },
+            title: { display: false },
+        },
         scales: {
             y: {
-                ticks: { color: isDarkMode ? '#cbd5e1' : '#64748b', callback: (value) => value + '%' },
-                grid: { color: isDarkMode ? '#475569' : '#e2e8f0' }
+                beginAtZero: false,
+                min: 1.8,
+                max: 2.5,
+                ticks: {
+                    color: tickColor,
+                    callback: (value) => value + "%",
+                    stepSize: 0.1,
+                },
+                grid: { color: gridColor },
             },
             x: {
-                ticks: { color: isDarkMode ? '#cbd5e1' : '#64748b' },
-                grid: { display: false }
-            }
-        }
-    };
-    const data = {
-        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-        datasets: [{
-            label: 'Turnover Rate',
-            data: [2.1, 1.8, 2.5, 2.2],
-            borderColor: '#ef4444', // rose-500
-            tension: 0.4,
-        }],
-    };
-    return <Line options={options} data={data} />;
-};
+                ticks: { color: tickColor },
+                grid: { display: false },
+            },
+        },
+    }
 
-const SalaryDistributionChart = ({ isDarkMode }) => {
+    const data = {
+        labels: ["Q1", "Q2", "Q3", "Q4"],
+        datasets: [
+            {
+                label: "Turnover Rate",
+                data: [2.1, 1.8, 2.5, 2.2],
+                borderColor: "#ef4444",
+                backgroundColor: "rgba(239, 68, 68, 0.1)",
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: "#ef4444",
+                pointBorderColor: "#ef4444",
+                pointRadius: 4,
+            },
+        ],
+    }
+
+    return <Line options={options} data={data} />
+}
+
+const SalaryDistributionChart = () => {
+    const gridColor = useColorModeValue("#e2e8f0", "#4a5568")
+    const tickColor = useColorModeValue("#64748b", "#a0aec0")
+
     const options = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+            legend: { display: false },
+            title: { display: false },
+        },
         scales: {
             y: {
-                ticks: { color: isDarkMode ? '#cbd5e1' : '#64748b', callback: (value) => '$' + value/1000 + 'k' },
-                grid: { color: isDarkMode ? '#475569' : '#e2e8f0' }
+                beginAtZero: true,
+                max: 140000,
+                ticks: {
+                    color: tickColor,
+                    callback: (value) => "$" + value / 1000 + "k",
+                    stepSize: 20000,
+                },
+                grid: { color: gridColor },
             },
             x: {
-                ticks: { color: isDarkMode ? '#cbd5e1' : '#64748b' },
-                grid: { display: false }
-            }
-        }
-    };
+                ticks: { color: tickColor },
+                grid: { display: false },
+            },
+        },
+    }
+
     const data = {
-        labels: ['Intern', 'Junior', 'Mid-Level', 'Senior', 'Lead'],
-        datasets: [{
-            label: 'Average Salary',
-            data: [45000, 65000, 85000, 110000, 135000],
-            backgroundColor: 'rgba(245, 158, 11, 0.6)', // amber-500 with opacity
-            borderColor: 'rgba(245, 158, 11, 1)',
-            borderWidth: 1,
-            borderRadius: 5,
-        }],
-    };
-    return <Bar options={options} data={data} />;
-};
+        labels: ["Intern", "Junior", "Mid-Level", "Senior", "Lead"],
+        datasets: [
+            {
+                label: "Average Salary",
+                data: [45000, 65000, 85000, 110000, 135000],
+                backgroundColor: "#f59e0b",
+                borderRadius: 4,
+                borderSkipped: false,
+            },
+        ],
+    }
 
+    return <Bar options={options} data={data} />
+}
 
-// --- Main Reports Page Component ---
 const ReportsPage = () => {
-    const { theme } = useThemeStore();
-    const isDarkMode = theme === 'dark';
+    const cardBg = useColorModeValue("white", "gray.800")
+    const textColor = useColorModeValue("gray.600", "gray.300")
 
     return (
-        <div className="p-4 sm:p-8">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">Reports & Analytics</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">Generate and view key organizational reports.</p>
-                </div>
-                <Button 
-                    label="Export All" 
-                    icon="pi pi-download" 
-                    className="p-button-secondary"
-                />
-            </div>
+        <Container maxW="7xl" py={8}>
+            <MotionBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                {/* Header */}
+                <VStack spacing={6} mb={8}>
+                    <HStack spacing={4} w="full" justify="space-between">
+                        <VStack align="start" spacing={1}>
+                            <Heading size="xl" color="blue.600">
+                                <HStack>
+                                    <FaChartBar />
+                                    <Text>Reports & Analytics</Text>
+                                </HStack>
+                            </Heading>
+                            <Text color={textColor}>Generate and view key organizational reports.</Text>
+                        </VStack>
+                        <Button leftIcon={<FaDownload />} colorScheme="blue" variant="outline">
+                            Export All
+                        </Button>
+                    </HStack>
+                </VStack>
 
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-lg transition-colors duration-300">
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Executive Summary</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <ChartCard title="Headcount Growth (YTD)">
-                        <HeadcountGrowthChart isDarkMode={isDarkMode} />
-                    </ChartCard>
-                    <ChartCard title="Employee Diversity by Department">
-                        <EmployeeDiversityChart isDarkMode={isDarkMode} />
-                    </ChartCard>
-                    <ChartCard title="Quarterly Turnover Rate">
-                        <TurnoverRateChart isDarkMode={isDarkMode} />
-                    </ChartCard>
-                    <ChartCard title="Salary Distribution by Role">
-                        <SalaryDistributionChart isDarkMode={isDarkMode} />
-                    </ChartCard>
-                </div>
-            </div>
-        </div>
-    );
-};
+                {/* Executive Summary Section */}
+                <Card bg={cardBg} shadow="lg" mb={6}>
+                    <CardBody p={8}>
+                        <Heading size="lg" mb={6} color={useColorModeValue("gray.800", "gray.100")}>
+                            Executive Summary
+                        </Heading>
 
-export default ReportsPage;
+                        <Grid templateColumns={{ base: "1fr", lg: "repeat(2, 1fr)" }} gap={8}>
+                            {/* Headcount Growth Chart */}
+                            <GridItem>
+                                <Box>
+                                    <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
+                                        Headcount Growth (YTD)
+                                    </Heading>
+                                    <Box h="300px">
+                                        <HeadcountGrowthChart />
+                                    </Box>
+                                </Box>
+                            </GridItem>
+
+                            {/* Employee Diversity Chart */}
+                            <GridItem>
+                                <Box>
+                                    <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
+                                        Employee Diversity by Department
+                                    </Heading>
+                                    <Box h="300px">
+                                        <EmployeeDiversityChart />
+                                    </Box>
+                                </Box>
+                            </GridItem>
+
+                            {/* Turnover Rate Chart */}
+                            <GridItem>
+                                <Box>
+                                    <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
+                                        Quarterly Turnover Rate
+                                    </Heading>
+                                    <Box h="300px">
+                                        <TurnoverRateChart />
+                                    </Box>
+                                </Box>
+                            </GridItem>
+
+                            {/* Salary Distribution Chart */}
+                            <GridItem>
+                                <Box>
+                                    <Heading size="md" mb={4} color={useColorModeValue("gray.700", "gray.200")}>
+                                        Salary Distribution by Role
+                                    </Heading>
+                                    <Box h="300px">
+                                        <SalaryDistributionChart />
+                                    </Box>
+                                </Box>
+                            </GridItem>
+                        </Grid>
+                    </CardBody>
+                </Card>
+            </MotionBox>
+        </Container>
+    )
+}
+
+export default ReportsPage
