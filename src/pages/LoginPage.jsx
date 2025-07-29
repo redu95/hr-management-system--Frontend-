@@ -254,11 +254,11 @@ const LoginPage = () => {
                                 {/* Forgot Password Link */}
                                 <Flex w="full" justify="flex-end">
                                     <Text
-                                        as="a"
-                                        href="#"
+                                        as="span"
                                         fontSize="sm"
                                         color="blue.500"
-                                        _hover={{ color: "blue.600", textDecoration: "underline" }}
+                                        _hover={{ color: "blue.600", textDecoration: "underline", cursor: "pointer" }}
+                                        onClick={() => navigate("/forgot-password")}
                                     >
                                         Forgot Password?
                                     </Text>
