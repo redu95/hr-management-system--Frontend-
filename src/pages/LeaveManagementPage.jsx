@@ -63,6 +63,7 @@ import {
 } from "react-icons/fa"
 import ApiService from "../services/apiService"
 import useAuthStore from "../store/authStore"
+import RoleBasedComponent from "../components/common/RoleBasedComponent"
 
 const MotionBox = motion(Box)
 
@@ -307,11 +308,17 @@ const LeaveManagementPage = () => {
                             <Heading size="xl" color="blue.600">
                                 <HStack>
                                     <FaCalendarAlt />
-                                    <Text>{canManageLeave ? "Leave Management" : "My Leave Requests"}</Text>
+                                    <Text>
+                                        <RoleBasedComponent allowedRoles={["CEO", "HR", "Manager"]} fallback="My Leave Requests">
+                                            Leave Management
+                                        </RoleBasedComponent>
+                                    </Text>
                                 </HStack>
                             </Heading>
                             <Text color={textColor}>
-                                {canManageLeave ? "Manage employee leave requests" : "Track your leave requests and balance"}
+                                <RoleBasedComponent allowedRoles={["CEO", "HR", "Manager"]} fallback="Track your leave requests and balance">
+                                    Manage employee leave requests
+                                </RoleBasedComponent>
                             </Text>
                         </VStack>
                         <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={onAddOpen}>
@@ -412,157 +419,298 @@ const LeaveManagementPage = () => {
                 </VStack>
 
                 {/* Leave Requests Table */}
-                <Card bg={cardBg} shadow="md">
-                    <CardHeader>
-                        <Heading size="md" color={headingColor}>
-                            Leave Requests
-                        </Heading>
-                    </CardHeader>
-                    <CardBody p={0}>
-                        {filteredRequests.length === 0 ? (
-                            <Box p={8} textAlign="center">
-                                <VStack spacing={4}>
-                                    <FaCalendarAlt size="48" color={textColor} />
-                                    <Text fontSize="lg" color={textColor}>
-                                        No leave requests found
-                                    </Text>
-                                    <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={onAddOpen}>
-                                        Create Your First Request
-                                    </Button>
-                                </VStack>
-                            </Box>
-                        ) : (
-                            <Box overflowX="auto">
-                                <Table variant="simple">
-                                    <Thead bg={hoverBg}>
-                                        <Tr>
-                                            {canManageLeave && <Th color={textColor}>Employee</Th>}
-                                            <Th color={textColor}>Leave Period</Th>
-                                            <Th color={textColor}>Duration</Th>
-                                            <Th color={textColor}>Reason</Th>
-                                            <Th color={textColor}>Status</Th>
-                                            <Th color={textColor}>Submitted</Th>
-                                            <Th color={textColor}>Actions</Th>
-                                        </Tr>
-                                    </Thead>
-                                    <Tbody>
-                                        {filteredRequests.map((request) => {
-                                            const employee = employees.find((emp) => emp.id === request.employee) || {}
-                                            const days = calculateDays(request.start_date, request.end_date)
+                <RoleBasedComponent
+                    allowedRoles={["CEO", "HR", "Manager"]}
+                    fallback={
+                        // Employee view: show only their own leave requests
+                        <Card bg={cardBg} shadow="md">
+                            <CardHeader>
+                                <Heading size="md" color={headingColor}>
+                                    My Leave Requests
+                                </Heading>
+                            </CardHeader>
+                            <CardBody p={0}>
+                                {filteredRequests.length === 0 ? (
+                                    <Box p={8} textAlign="center">
+                                        <VStack spacing={4}>
+                                            <FaCalendarAlt size="48" color={textColor} />
+                                            <Text fontSize="lg" color={textColor}>
+                                                No leave requests found
+                                            </Text>
+                                            <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={onAddOpen}>
+                                                Create Your First Request
+                                            </Button>
+                                        </VStack>
+                                    </Box>
+                                ) : (
+                                    <Box overflowX="auto">
+                                        <Table variant="simple">
+                                            <Thead bg={hoverBg}>
+                                                <Tr>
+                                                    <Th color={textColor}>Leave Period</Th>
+                                                    <Th color={textColor}>Duration</Th>
+                                                    <Th color={textColor}>Reason</Th>
+                                                    <Th color={textColor}>Status</Th>
+                                                    <Th color={textColor}>Submitted</Th>
+                                                    <Th color={textColor}>Actions</Th>
+                                                </Tr>
+                                            </Thead>
+                                            <Tbody>
+                                                {filteredRequests
+                                                    .filter((request) => request.employee === user.id) // Only show requests for the logged-in user
+                                                    .map((request) => {
+                                                        const employee = employees.find((emp) => emp.id === request.employee) || {}
+                                                        const days = calculateDays(request.start_date, request.end_date)
 
-                                            return (
-                                                <Tr key={request.id} _hover={{ bg: hoverBg }}>
-                                                    {canManageLeave && (
-                                                        <Td>
-                                                            <HStack spacing={3}>
-                                                                <Avatar
-                                                                    size="sm"
-                                                                    name={`${employee.first_name} ${employee.last_name}`}
-                                                                    src={`https://ui-avatars.com/api/?name=${employee.first_name}+${employee.last_name}&background=random`}
-                                                                />
-                                                                <VStack align="start" spacing={0}>
-                                                                    <Text fontWeight="semibold" color={headingColor}>
-                                                                        {employee.first_name} {employee.last_name}
+                                                        return (
+                                                            <Tr key={request.id} _hover={{ bg: hoverBg }}>
+                                                                <Td>
+                                                                    <VStack align="start" spacing={1}>
+                                                                        <Text fontWeight="medium" color={headingColor}>
+                                                                            {new Date(request.start_date).toLocaleDateString()} -{" "}
+                                                                            {new Date(request.end_date).toLocaleDateString()}
+                                                                        </Text>
+                                                                        <Text fontSize="sm" color={textColor}>
+                                                                            {new Date(request.start_date).toLocaleDateString("en-US", { weekday: "short" })} -{" "}
+                                                                            {new Date(request.end_date).toLocaleDateString("en-US", { weekday: "short" })}
+                                                                        </Text>
+                                                                    </VStack>
+                                                                </Td>
+                                                                <Td>
+                                                                    <Badge colorScheme="blue" variant="subtle">
+                                                                        {days} {days === 1 ? "day" : "days"}
+                                                                    </Badge>
+                                                                </Td>
+                                                                <Td>
+                                                                    <Text noOfLines={2} maxW="200px" color={headingColor}>
+                                                                        {request.reason || "No reason provided"}
                                                                     </Text>
+                                                                </Td>
+                                                                <Td>
+                                                                    <Badge colorScheme={getStatusColor(request.status)} variant="subtle">
+                                                                        <HStack spacing={1}>
+                                                                            {getStatusIcon(request.status)}
+                                                                            <Text>{request.status}</Text>
+                                                                        </HStack>
+                                                                    </Badge>
+                                                                </Td>
+                                                                <Td>
                                                                     <Text fontSize="sm" color={textColor}>
-                                                                        {employee.job_title}
+                                                                        {request.created_at ? new Date(request.created_at).toLocaleDateString() : "N/A"}
                                                                     </Text>
-                                                                </VStack>
-                                                            </HStack>
-                                                        </Td>
-                                                    )}
-                                                    <Td>
-                                                        <VStack align="start" spacing={1}>
-                                                            <Text fontWeight="medium" color={headingColor}>
-                                                                {new Date(request.start_date).toLocaleDateString()} -{" "}
-                                                                {new Date(request.end_date).toLocaleDateString()}
-                                                            </Text>
-                                                            <Text fontSize="sm" color={textColor}>
-                                                                {new Date(request.start_date).toLocaleDateString("en-US", { weekday: "short" })} -{" "}
-                                                                {new Date(request.end_date).toLocaleDateString("en-US", { weekday: "short" })}
-                                                            </Text>
-                                                        </VStack>
-                                                    </Td>
-                                                    <Td>
-                                                        <Badge colorScheme="blue" variant="subtle">
-                                                            {days} {days === 1 ? "day" : "days"}
-                                                        </Badge>
-                                                    </Td>
-                                                    <Td>
-                                                        <Text noOfLines={2} maxW="200px" color={headingColor}>
-                                                            {request.reason || "No reason provided"}
-                                                        </Text>
-                                                    </Td>
-                                                    <Td>
-                                                        <Badge colorScheme={getStatusColor(request.status)} variant="subtle">
-                                                            <HStack spacing={1}>
-                                                                {getStatusIcon(request.status)}
-                                                                <Text>{request.status}</Text>
-                                                            </HStack>
-                                                        </Badge>
-                                                    </Td>
-                                                    <Td>
-                                                        <Text fontSize="sm" color={textColor}>
-                                                            {request.created_at ? new Date(request.created_at).toLocaleDateString() : "N/A"}
-                                                        </Text>
-                                                    </Td>
-                                                    <Td>
-                                                        <HStack spacing={1}>
-                                                            <IconButton
-                                                                icon={<FaEye />}
-                                                                size="sm"
-                                                                variant="ghost"
-                                                                colorScheme="blue"
-                                                                onClick={() => {
-                                                                    setSelectedRequest(request)
-                                                                    onViewOpen()
-                                                                }}
-                                                                aria-label="View request"
-                                                            />
-                                                            {canManageLeave && request.status === "Pending" && (
-                                                                <>
-                                                                    <IconButton
-                                                                        icon={<FaCheck />}
+                                                                </Td>
+                                                                <Td>
+                                                                    <HStack spacing={1}>
+                                                                        <IconButton
+                                                                            icon={<FaEye />}
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            colorScheme="blue"
+                                                                            onClick={() => {
+                                                                                setSelectedRequest(request)
+                                                                                onViewOpen()
+                                                                            }}
+                                                                            aria-label="View request"
+                                                                        />
+                                                                        {canManageLeave && request.status === "Pending" && (
+                                                                            <>
+                                                                                <IconButton
+                                                                                    icon={<FaCheck />}
+                                                                                    size="sm"
+                                                                                    variant="ghost"
+                                                                                    colorScheme="green"
+                                                                                    onClick={() => handleApprove(request)}
+                                                                                    aria-label="Approve request"
+                                                                                />
+                                                                                <IconButton
+                                                                                    icon={<FaTimes />}
+                                                                                    size="sm"
+                                                                                    variant="ghost"
+                                                                                    colorScheme="red"
+                                                                                    onClick={() => handleDeny(request)}
+                                                                                    aria-label="Deny request"
+                                                                                />
+                                                                            </>
+                                                                        )}
+                                                                        {(request.status === "Pending" || canManageLeave) && (
+                                                                            <IconButton
+                                                                                icon={<FaTrash />}
+                                                                                size="sm"
+                                                                                variant="ghost"
+                                                                                colorScheme="red"
+                                                                                onClick={() => {
+                                                                                    setSelectedRequest(request)
+                                                                                    onDeleteOpen()
+                                                                                }}
+                                                                                aria-label="Delete request"
+                                                                            />
+                                                                        )}
+                                                                    </HStack>
+                                                                </Td>
+                                                            </Tr>
+                                                        )
+                                                    })}
+                                            </Tbody>
+                                        </Table>
+                                    </Box>
+                                )}
+                            </CardBody>
+                        </Card>
+                    }
+                >
+                    {/* Manager/HR/CEO view: show all leave requests */}
+                    <Card bg={cardBg} shadow="md">
+                        <CardHeader>
+                            <Heading size="md" color={headingColor}>
+                                Leave Requests
+                            </Heading>
+                        </CardHeader>
+                        <CardBody p={0}>
+                            {filteredRequests.length === 0 ? (
+                                <Box p={8} textAlign="center">
+                                    <VStack spacing={4}>
+                                        <FaCalendarAlt size="48" color={textColor} />
+                                        <Text fontSize="lg" color={textColor}>
+                                            No leave requests found
+                                        </Text>
+                                        <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={onAddOpen}>
+                                            Create Your First Request
+                                        </Button>
+                                    </VStack>
+                                </Box>
+                            ) : (
+                                <Box overflowX="auto">
+                                    <Table variant="simple">
+                                        <Thead bg={hoverBg}>
+                                            <Tr>
+                                                {canManageLeave && <Th color={textColor}>Employee</Th>}
+                                                <Th color={textColor}>Leave Period</Th>
+                                                <Th color={textColor}>Duration</Th>
+                                                <Th color={textColor}>Reason</Th>
+                                                <Th color={textColor}>Status</Th>
+                                                <Th color={textColor}>Submitted</Th>
+                                                <Th color={textColor}>Actions</Th>
+                                            </Tr>
+                                        </Thead>
+                                        <Tbody>
+                                            {filteredRequests.map((request) => {
+                                                const employee = employees.find((emp) => emp.id === request.employee) || {}
+                                                const days = calculateDays(request.start_date, request.end_date)
+
+                                                return (
+                                                    <Tr key={request.id} _hover={{ bg: hoverBg }}>
+                                                        {canManageLeave && (
+                                                            <Td>
+                                                                <HStack spacing={3}>
+                                                                    <Avatar
                                                                         size="sm"
-                                                                        variant="ghost"
-                                                                        colorScheme="green"
-                                                                        onClick={() => handleApprove(request)}
-                                                                        aria-label="Approve request"
+                                                                        name={`${employee.first_name} ${employee.last_name}`}
+                                                                        src={`https://ui-avatars.com/api/?name=${employee.first_name}+${employee.last_name}&background=random`}
                                                                     />
+                                                                    <VStack align="start" spacing={0}>
+                                                                        <Text fontWeight="semibold" color={headingColor}>
+                                                                            {employee.first_name} {employee.last_name}
+                                                                        </Text>
+                                                                        <Text fontSize="sm" color={textColor}>
+                                                                            {employee.job_title}
+                                                                        </Text>
+                                                                    </VStack>
+                                                                </HStack>
+                                                            </Td>
+                                                        )}
+                                                        <Td>
+                                                            <VStack align="start" spacing={1}>
+                                                                <Text fontWeight="medium" color={headingColor}>
+                                                                    {new Date(request.start_date).toLocaleDateString()} -{" "}
+                                                                    {new Date(request.end_date).toLocaleDateString()}
+                                                                </Text>
+                                                                <Text fontSize="sm" color={textColor}>
+                                                                    {new Date(request.start_date).toLocaleDateString("en-US", { weekday: "short" })} -{" "}
+                                                                    {new Date(request.end_date).toLocaleDateString("en-US", { weekday: "short" })}
+                                                                </Text>
+                                                            </VStack>
+                                                        </Td>
+                                                        <Td>
+                                                            <Badge colorScheme="blue" variant="subtle">
+                                                                {days} {days === 1 ? "day" : "days"}
+                                                            </Badge>
+                                                        </Td>
+                                                        <Td>
+                                                            <Text noOfLines={2} maxW="200px" color={headingColor}>
+                                                                {request.reason || "No reason provided"}
+                                                            </Text>
+                                                        </Td>
+                                                        <Td>
+                                                            <Badge colorScheme={getStatusColor(request.status)} variant="subtle">
+                                                                <HStack spacing={1}>
+                                                                    {getStatusIcon(request.status)}
+                                                                    <Text>{request.status}</Text>
+                                                                </HStack>
+                                                            </Badge>
+                                                        </Td>
+                                                        <Td>
+                                                            <Text fontSize="sm" color={textColor}>
+                                                                {request.created_at ? new Date(request.created_at).toLocaleDateString() : "N/A"}
+                                                            </Text>
+                                                        </Td>
+                                                        <Td>
+                                                            <HStack spacing={1}>
+                                                                <IconButton
+                                                                    icon={<FaEye />}
+                                                                    size="sm"
+                                                                    variant="ghost"
+                                                                    colorScheme="blue"
+                                                                    onClick={() => {
+                                                                        setSelectedRequest(request)
+                                                                        onViewOpen()
+                                                                    }}
+                                                                    aria-label="View request"
+                                                                />
+                                                                {canManageLeave && request.status === "Pending" && (
+                                                                    <>
+                                                                        <IconButton
+                                                                            icon={<FaCheck />}
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            colorScheme="green"
+                                                                            onClick={() => handleApprove(request)}
+                                                                            aria-label="Approve request"
+                                                                        />
+                                                                        <IconButton
+                                                                            icon={<FaTimes />}
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            colorScheme="red"
+                                                                            onClick={() => handleDeny(request)}
+                                                                            aria-label="Deny request"
+                                                                        />
+                                                                    </>
+                                                                )}
+                                                                {(request.status === "Pending" || canManageLeave) && (
                                                                     <IconButton
-                                                                        icon={<FaTimes />}
+                                                                        icon={<FaTrash />}
                                                                         size="sm"
                                                                         variant="ghost"
                                                                         colorScheme="red"
-                                                                        onClick={() => handleDeny(request)}
-                                                                        aria-label="Deny request"
+                                                                        onClick={() => {
+                                                                            setSelectedRequest(request)
+                                                                            onDeleteOpen()
+                                                                        }}
+                                                                        aria-label="Delete request"
                                                                     />
-                                                                </>
-                                                            )}
-                                                            {(request.status === "Pending" || canManageLeave) && (
-                                                                <IconButton
-                                                                    icon={<FaTrash />}
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    colorScheme="red"
-                                                                    onClick={() => {
-                                                                        setSelectedRequest(request)
-                                                                        onDeleteOpen()
-                                                                    }}
-                                                                    aria-label="Delete request"
-                                                                />
-                                                            )}
-                                                        </HStack>
-                                                    </Td>
-                                                </Tr>
-                                            )
-                                        })}
-                                    </Tbody>
-                                </Table>
-                            </Box>
-                        )}
-                    </CardBody>
-                </Card>
+                                                                )}
+                                                            </HStack>
+                                                        </Td>
+                                                    </Tr>
+                                                )
+                                            })}
+                                        </Tbody>
+                                    </Table>
+                                </Box>
+                            )}
+                        </CardBody>
+                    </Card>
+                </RoleBasedComponent>
             </MotionBox>
 
             {/* Add Leave Request Modal */}
