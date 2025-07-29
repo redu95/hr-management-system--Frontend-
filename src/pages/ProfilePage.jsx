@@ -43,6 +43,8 @@ const ProfilePage = () => {
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
 
     const cardBg = useColorModeValue("white", "gray.800");
     const textColor = useColorModeValue("gray.600", "gray.300");
@@ -50,19 +52,45 @@ const ProfilePage = () => {
 
     useEffect(() => {
         ApiService.fetchCurrentUser()
-            .then((data) => setCurrentUser(data))
-            .catch(() => setCurrentUser({}));
+            .then((data) => {
+                setCurrentUser(data);
+                setFirstName(data.first_name || "");
+                setLastName(data.last_name || "");
+            })
+            .catch(() => {
+                setCurrentUser({});
+                setFirstName("");
+                setLastName("");
+            });
     }, []);
 
-    const handleSaveProfile = () => {
-        // Implement save profile logic here
-        toast({
-            title: "Profile Saved",
-            description: "Your profile information has been updated.",
-            status: "success",
-            duration: 3000,
-            isClosable: true,
-        });
+    const handleSaveProfile = async () => {
+        try {
+            // Call PUT /api/auth/me/ to update first and last name
+            const updated = await ApiService.apiCall("/api/auth/me/", {
+                method: "PUT",
+                body: JSON.stringify({
+                    first_name: firstName,
+                    last_name: lastName,
+                }),
+            });
+            setCurrentUser(updated);
+            toast({
+                title: "Profile Saved",
+                description: "Your profile information has been updated.",
+                status: "success",
+                duration: 3000,
+                isClosable: true,
+            });
+        } catch (error) {
+            toast({
+                title: "Update Failed",
+                description: error.message || "Could not update profile.",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            });
+        }
     };
 
     const handleChangePassword = () => {
@@ -90,12 +118,12 @@ const ProfilePage = () => {
                             <HStack spacing={4}>
                                 <Avatar
                                     size="xl"
-                                    name={`${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
-                                    src={`https://ui-avatars.com/api/?name=${currentUser.first_name || ""}+${currentUser.last_name || ""}&background=random&color=fff&size=128`}
+                                    name={`${firstName || ""} ${lastName || ""}`}
+                                    src={`https://ui-avatars.com/api/?name=${firstName || ""}+${lastName || ""}&background=random&color=fff&size=128`}
                                 />
                                 <VStack align="start">
                                     <Heading size="lg" color={headingColor}>
-                                        {currentUser.first_name || ""} {currentUser.last_name || ""}
+                                        {firstName} {lastName}
                                     </Heading>
                                     <Text color={textColor}>{email}</Text>
                                 </VStack>
@@ -105,11 +133,19 @@ const ProfilePage = () => {
                                 Profile Information
                             </Heading>
                             <FormControl>
-                                <FormLabel>Full Name</FormLabel>
+                                <FormLabel>First Name</FormLabel>
                                 <Input
-                                    type="input"
-                                    placeholder={`${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
-                                    onChange={(e) => setName(e.target.value)}
+                                    type="text"
+                                    value={firstName}
+                                    onChange={(e) => setFirstName(e.target.value)}
+                                />
+                            </FormControl>
+                            <FormControl>
+                                <FormLabel>Last Name</FormLabel>
+                                <Input
+                                    type="text"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
                                 />
                             </FormControl>
                             <FormControl>
