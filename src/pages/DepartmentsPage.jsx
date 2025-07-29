@@ -52,22 +52,13 @@ import {
 import { motion } from "framer-motion"
 import { FaBuilding, FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaUsers } from "react-icons/fa"
 import ApiService from "../services/apiService"
-import {
-    useDepartments,
-    useCreateDepartment,
-    useUpdateDepartment,
-    useDeleteDepartment,
-} from "../services/departmentService"
 
 const MotionBox = motion(Box)
 
 const DepartmentsPage = () => {
-    const { data: departmentsData, isLoading, isError } = useDepartments()
-    const createDepartmentMutation = useCreateDepartment()
-    const updateDepartmentMutation = useUpdateDepartment()
-    const deleteDepartmentMutation = useDeleteDepartment()
-    const departments = departmentsData?.results || []
+    const [departments, setDepartments] = useState([])
     const [employees, setEmployees] = useState([])
+    const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedDepartment, setSelectedDepartment] = useState(null)
     const [formData, setFormData] = useState({
@@ -85,6 +76,24 @@ const DepartmentsPage = () => {
     const toast = useToast()
     const cardBg = useColorModeValue("white", "gray.800")
 
+    const fetchDepartments = async () => {
+        try {
+            setLoading(true)
+            const data = await ApiService.getDepartments()
+            setDepartments(Array.isArray(data) ? data : data.results || [])
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to fetch departments.",
+                status: "error",
+                duration: 3000,
+                isClosable: true,
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const fetchEmployees = async () => {
         try {
             const data = await ApiService.getEmployees()
@@ -95,6 +104,7 @@ const DepartmentsPage = () => {
     }
 
     useEffect(() => {
+        fetchDepartments()
         fetchEmployees()
     }, [])
 
@@ -121,55 +131,24 @@ const DepartmentsPage = () => {
             }
 
             if (isEdit) {
-                updateDepartmentMutation.mutate(
-                    { id: selectedDepartment.id, ...payload },
-                    {
-                        onSuccess: () => {
-                            toast({
-                                title: "Success",
-                                description: "Department updated successfully",
-                                status: "success",
-                                duration: 3000,
-                                isClosable: true,
-                            })
-                            onEditClose()
-                        },
-                        onError: (error) => {
-                            toast({
-                                title: "Error",
-                                description: error.message || "Operation failed",
-                                status: "error",
-                                duration: 3000,
-                                isClosable: true,
-                            })
-                        },
-                    },
-                )
-            } else {
-                createDepartmentMutation.mutate(payload, {
-                    onSuccess: () => {
-                        toast({
-                            title: "Success",
-                            description: "Department created successfully",
-                            status: "success",
-                            duration: 3000,
-                            isClosable: true,
-                        })
-                        onAddClose()
-                    },
-                    onError: (error) => {
-                        toast({
-                            title: "Error",
-                            description: error.message || "Operation failed",
-                            status: "error",
-                            duration: 3000,
-                            isClosable: true,
-                        })
-                    },
+                await ApiService.updateDepartment(selectedDepartment.id, payload)
+                toast({
+                    title: "Success",
+                    description: "Department updated successfully",
+                    status: "success",
                 })
+                onEditClose()
+            } else {
+                await ApiService.createDepartment(payload)
+                toast({
+                    title: "Success",
+                    description: "Department created successfully",
+                    status: "success",
+                })
+                onAddClose()
             }
 
-            // fetchDepartments(); // Removed as it's not needed here
+            fetchDepartments()
             resetForm()
         } catch (error) {
             toast({
@@ -184,28 +163,14 @@ const DepartmentsPage = () => {
 
     const handleDelete = async () => {
         try {
-            deleteDepartmentMutation.mutate(selectedDepartment.id, {
-                onSuccess: () => {
-                    toast({
-                        title: "Success",
-                        description: "Department deleted successfully",
-                        status: "success",
-                        duration: 3000,
-                        isClosable: true,
-                    })
-                    onDeleteClose()
-                },
-                onError: (error) => {
-                    toast({
-                        title: "Error",
-                        description: error.message || "Failed to delete department",
-                        status: "error",
-                        duration: 3000,
-                        isClosable: true,
-                    })
-                },
+            await ApiService.deleteDepartment(selectedDepartment.id)
+            toast({
+                title: "Success",
+                description: "Department deleted successfully",
+                status: "success",
             })
-            // fetchDepartments(); // Removed as it's not needed here
+            onDeleteClose()
+            fetchDepartments()
         } catch (error) {
             toast({
                 title: "Error",
@@ -253,22 +218,7 @@ const DepartmentsPage = () => {
         onDeleteOpen()
     }
 
-    // const fetchDepartments = async () => { // Removed as it's not needed here
-    //     try {
-    //         const data = await ApiService.getDepartments();
-    //         setDepartments(Array.isArray(data) ? data : data.results || []);
-    //     } catch (error) {
-    //         toast({
-    //             title: "Error",
-    //             description: "Failed to fetch departments",
-    //             status: "error",
-    //             duration: 3000,
-    //             isClosable: true,
-    //         });
-    //     }
-    // };
-
-    if (isLoading) {
+    if (loading) {
         return (
             <Container maxW="7xl" py={8}>
                 <Flex justify="center" align="center" h="400px">
