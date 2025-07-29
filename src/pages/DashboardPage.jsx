@@ -18,6 +18,8 @@ import {
 import { FaUsers, FaUserMinus, FaInbox, FaUserPlus } from "react-icons/fa"
 import useAuthStore from "../store/authStore"
 import RoleBasedComponent from "../components/common/RoleBasedComponent"
+import { useEffect, useState } from "react"
+import ApiService from "../services/apiService"
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
@@ -155,6 +157,15 @@ const KpiCard = ({ icon: Icon, title, value, color, index }) => {
 const DashboardPage = () => {
     const { user } = useAuthStore()
 
+    // Add state for current user info from /auth/me
+    const [currentUser, setCurrentUser] = useState({})
+
+    useEffect(() => {
+        ApiService.fetchCurrentUser()
+            .then(data => setCurrentUser(data))
+            .catch(() => setCurrentUser({}))
+    }, [])
+
     const kpiData = [
         { icon: FaUsers, title: "Total Employees", value: "248", color: "sky" },
         { icon: FaUserMinus, title: "Employees on Leave", value: "12", color: "amber" },
@@ -180,7 +191,7 @@ const DashboardPage = () => {
             {/* Welcome Message */}
             <MotionBox mb={8} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <Heading size="xl" mb={2}>
-                    Welcome back, {user?.username}!
+                    Welcome back, {currentUser.first_name || ""} {currentUser.last_name || ""}!
                 </Heading>
                 <Text color="gray.600" _dark={{ color: "gray.300" }}>
                     Here's what's happening in your organization today.

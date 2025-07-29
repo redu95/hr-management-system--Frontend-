@@ -153,6 +153,40 @@ class ApiService {
             method: "DELETE",
         })
     }
+
+    // Fetch current user data
+    async fetchCurrentUser() {
+        const token = localStorage.getItem("accessToken")
+        // Update the endpoint below if your backend uses a different path!
+        const endpoint = "/api/auth/me/" // <-- Change this to the correct endpoint
+        try {
+            const response = await fetch(`${this.baseURL}${endpoint}`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+            })
+
+            const contentType = response.headers.get("content-type")
+            if (!response.ok) {
+                let errorText = await response.text()
+                console.error(`[${endpoint}] error response:`, errorText)
+                throw new Error(`HTTP ${response.status}: ${errorText}`)
+            }
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json()
+                console.log(`[${endpoint}] response:`, data)
+                return data
+            } else {
+                const text = await response.text()
+                console.error(`[${endpoint}] Non-JSON response:`, text)
+                throw new Error("Response is not JSON")
+            }
+        } catch (error) {
+            console.error(`[${endpoint}] error:`, error)
+            throw error
+        }
+    }
 }
 
 export default new ApiService()

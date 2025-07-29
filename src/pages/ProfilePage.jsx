@@ -1,6 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useToast, useColorModeValue } from "@chakra-ui/react";
+import { motion } from "framer-motion";
+import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
+
 import {
     Box,
     Button,
@@ -17,12 +21,10 @@ import {
     InputGroup,
     InputRightElement,
     IconButton,
-    useToast,
-    useColorModeValue,
     Avatar,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
-import { FaEye, FaEyeSlash, FaCheck } from "react-icons/fa";
+
+import ApiService from "../services/apiService";
 import useAuthStore from "../store/authStore";
 
 const MotionBox = motion(Box);
@@ -40,10 +42,17 @@ const ProfilePage = () => {
     const [newPassword, setNewPassword] = useState("");
     const [showOldPassword, setShowOldPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
+    const [currentUser, setCurrentUser] = useState({});
 
     const cardBg = useColorModeValue("white", "gray.800");
     const textColor = useColorModeValue("gray.600", "gray.300");
     const headingColor = useColorModeValue("gray.800", "gray.100");
+
+    useEffect(() => {
+        ApiService.fetchCurrentUser()
+            .then((data) => setCurrentUser(data))
+            .catch(() => setCurrentUser({}));
+    }, []);
 
     const handleSaveProfile = () => {
         // Implement save profile logic here
@@ -81,12 +90,12 @@ const ProfilePage = () => {
                             <HStack spacing={4}>
                                 <Avatar
                                     size="xl"
-                                    name={name}
-                                    src={`https://ui-avatars.com/api/?name=${name}&background=random&color=fff&size=128`}
+                                    name={`${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
+                                    src={`https://ui-avatars.com/api/?name=${currentUser.first_name || ""}+${currentUser.last_name || ""}&background=random&color=fff&size=128`}
                                 />
                                 <VStack align="start">
                                     <Heading size="lg" color={headingColor}>
-                                        {name}
+                                        {currentUser.first_name || ""} {currentUser.last_name || ""}
                                     </Heading>
                                     <Text color={textColor}>{email}</Text>
                                 </VStack>
@@ -98,8 +107,8 @@ const ProfilePage = () => {
                             <FormControl>
                                 <FormLabel>Full Name</FormLabel>
                                 <Input
-                                    type="text"
-                                    value={name}
+                                    type="input"
+                                    placeholder={`${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
                                     onChange={(e) => setName(e.target.value)}
                                 />
                             </FormControl>

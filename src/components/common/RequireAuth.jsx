@@ -1,9 +1,16 @@
 import { Navigate, useLocation } from "react-router-dom"
 import useAuthStore from "../../store/authStore"
+import { useEffect } from "react"
+import ApiService from "../../services/apiService"
 
 const RequireAuth = ({ children, requiredPermission = null }) => {
   const { isAuthenticated, user, hasPermission, canAccess } = useAuthStore()
   const location = useLocation()
+
+  // Fetch current user info from backend for debugging/logging
+  useEffect(() => {
+    ApiService.fetchCurrentUser()
+  }, [])
 
   console.log("🛡️ [REQUIRE_AUTH] Checking authentication:", {
     isAuthenticated,

@@ -20,10 +20,21 @@ import {
 import { FaSearch, FaBell, FaSun, FaMoon, FaBars } from "react-icons/fa"
 import useAuthStore from "../../store/authStore"
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from "react"
+import ApiService from "../../services/apiService"
 
 const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
     const location = useLocation()
     const { user } = useAuthStore()
+
+    // Add state for current user info from /auth/me
+    const [currentUser, setCurrentUser] = useState({})
+
+    useEffect(() => {
+        ApiService.fetchCurrentUser()
+            .then(data => setCurrentUser(data))
+            .catch(() => setCurrentUser({}))
+    }, [])
 
     const bgGradient = useColorModeValue("linear(to-r, purple.600, purple.900)", "linear(to-r, blue.600, purple.700)")
 
@@ -95,14 +106,14 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
                     <HStack spacing={3} cursor="pointer">
                         <Avatar
                             size="sm"
-                            name={user?.username || "User"}
-                            src={`https://ui-avatars.com/api/?name=${user?.username || "User"}&background=random&color=fff&size=40`}
+                            name={`${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
+                            src={`https://ui-avatars.com/api/?name=${currentUser.first_name || ""}+${currentUser.last_name || ""}&background=random&color=fff&size=40`}
                             border="2px solid"
                             borderColor="whiteAlpha.300"
                         />
                         <VStack spacing={0} align="start" display={{ base: "none", md: "flex" }}>
                             <Text fontSize="sm" fontWeight="semibold" color="white">
-                                {user?.username || "User"}
+                                {currentUser.first_name || ""} {currentUser.last_name || ""}
                             </Text>
                             <Badge colorScheme={getRoleBadgeColor(user?.role)} size="sm">
                                 {user?.role || "Employee"}
