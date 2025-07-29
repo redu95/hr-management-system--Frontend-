@@ -9,6 +9,7 @@ const RequireAuth = ({ children, requiredPermission = null }) => {
     isAuthenticated,
     hasUser: !!user,
     userRole: user?.role,
+    userName: user?.username,
     currentPath: location.pathname,
     requiredPermission,
   })
@@ -32,6 +33,17 @@ const RequireAuth = ({ children, requiredPermission = null }) => {
   }
 
   console.log("✅ [REQUIRE_AUTH] Access granted")
+  console.log("🛡️ [REQUIRE_AUTH] Checking authentication:", {
+    isAuthenticated,
+    hasUser: !!user,
+    userRole: user?.role,
+    userName: user?.username,
+    userEmail: user?.email,
+    currentPath: location.pathname,
+    requiredPermission,
+  })
+  
+
   return children
 }
 

@@ -177,6 +177,9 @@ const useAuthStore = create(
                     localStorage.setItem("isAuthenticated", "true")
 
                     console.log("✅ [AUTH] Login successful, state updated")
+
+                    console.log("👤 [AUTH] User object created:", user.username)
+                    
                     console.log("💾 [AUTH] Tokens and user data stored in localStorage")
 
                     // Verify state was set correctly
@@ -331,6 +334,7 @@ const useAuthStore = create(
 
                 const canAccess = get().hasPermission(requiredPermission)
                 console.log("🔍 [AUTH] Route access result:", canAccess)
+                
                 return canAccess
             },
 

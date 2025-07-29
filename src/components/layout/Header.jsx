@@ -73,20 +73,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
 
                 {/* Right-side controls */}
                 <HStack spacing={{ base: 2, sm: 4, md: 6 }}>
-                    {/* Search Bar */}
-                    <InputGroup size="md" w={{ base: "200px", md: "300px", lg: "400px" }} display={{ base: "none", sm: "flex" }}>
-                        <Input
-                            placeholder="Search..."
-                            bg="whiteAlpha.200"
-                            border="none"
-                            color="white"
-                            _placeholder={{ color: "whiteAlpha.700" }}
-                            _focus={{ bg: "whiteAlpha.300" }}
-                        />
-                        <InputRightElement>
-                            <FaSearch color="white" opacity={0.7} />
-                        </InputRightElement>
-                    </InputGroup>
+                    
 
                     {/* Dark/Light Mode Switch */}
                     <HStack spacing={2}>
