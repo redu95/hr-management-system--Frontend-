@@ -106,14 +106,14 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
                     <HStack spacing={3} cursor="pointer">
                         <Avatar
                             size="sm"
-                            name={`${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
-                            src={`https://ui-avatars.com/api/?name=${currentUser.first_name || ""}+${currentUser.last_name || ""}&background=random&color=fff&size=40`}
+                            name={currentUser.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
+                            src={`https://ui-avatars.com/api/?name=${currentUser.name || `${currentUser.first_name || ""}+${currentUser.last_name || ""}`}&background=random&color=fff&size=40`}
                             border="2px solid"
                             borderColor="whiteAlpha.300"
                         />
                         <VStack spacing={0} align="start" display={{ base: "none", md: "flex" }}>
                             <Text fontSize="sm" fontWeight="semibold" color="white">
-                                {currentUser.first_name || ""} {currentUser.last_name || ""}
+                                {currentUser.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()}
                             </Text>
                             <Badge colorScheme={getRoleBadgeColor(user?.role)} size="sm">
                                 {user?.role || "Employee"}

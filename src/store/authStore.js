@@ -60,6 +60,7 @@ const useAuthStore = create(
                     canManageSettings: true,
                     canRegisterUsers: true,
                     canViewAllData: true,
+                    canViewProfile: true,
                 },
                 Manager: {
                     canViewDashboard: true,
@@ -70,6 +71,7 @@ const useAuthStore = create(
                     canManageSettings: false,
                     canRegisterUsers: false,
                     canViewAllData: false,
+                    canViewProfile: true,
                 },
                 HR: {
                     canViewDashboard: true,
@@ -80,6 +82,7 @@ const useAuthStore = create(
                     canManageSettings: true,
                     canRegisterUsers: true,
                     canViewAllData: true,
+                    canViewProfile: true,
                 },
                 Employee: {
                     canViewDashboard: true,
@@ -90,6 +93,7 @@ const useAuthStore = create(
                     canManageSettings: false,
                     canRegisterUsers: false,
                     canViewAllData: false,
+                    canViewProfile: true,
                 },
             },
 
@@ -320,10 +324,10 @@ const useAuthStore = create(
                     "/dashboard": "canViewDashboard",
                     "/employees": "canManageEmployees",
                     "/departments": "canManageDepartments",
-                    "/leave": "canManageLeave",
                     "/reports": "canViewReports",
                     "/settings": "canManageSettings",
                     "/register": "canRegisterUsers",
+                    "/profile": "canViewProfile",
                 }
 
                 const requiredPermission = routePermissions[route]

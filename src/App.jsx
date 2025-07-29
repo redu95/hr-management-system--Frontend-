@@ -113,7 +113,7 @@ function App() {
             <Route
               path="/profile"
               element={
-                <RequireAuth requiredPermission="canManageSettings">
+                <RequireAuth>
                   <ProfilePage />
                 </RequireAuth>
               }

@@ -191,7 +191,7 @@ const DashboardPage = () => {
             {/* Welcome Message */}
             <MotionBox mb={8} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <Heading size="xl" mb={2}>
-                    Welcome back, {currentUser.first_name || ""} {currentUser.last_name || ""}!
+                    Welcome back, {user.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()}!
                 </Heading>
                 <Text color="gray.600" _dark={{ color: "gray.300" }}>
                     Here's what's happening in your organization today.

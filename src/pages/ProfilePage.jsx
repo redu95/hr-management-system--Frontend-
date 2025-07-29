@@ -54,11 +54,14 @@ const ProfilePage = () => {
         ApiService.fetchCurrentUser()
             .then((data) => {
                 setCurrentUser(data);
+                setName(data.name || "");
                 setFirstName(data.first_name || "");
                 setLastName(data.last_name || "");
+                setEmail(data.email || "");
             })
             .catch(() => {
                 setCurrentUser({});
+                setName("");
                 setFirstName("");
                 setLastName("");
             });
@@ -66,13 +69,13 @@ const ProfilePage = () => {
 
     const handleSaveProfile = async () => {
         try {
-            // Call PUT /api/auth/me/ to update first and last name
+            const payload = user?.role === 'Employee' 
+                ? { name }
+                : { first_name: firstName, last_name: lastName };
+
             const updated = await ApiService.apiCall("/api/auth/me/", {
                 method: "PUT",
-                body: JSON.stringify({
-                    first_name: firstName,
-                    last_name: lastName,
-                }),
+                body: JSON.stringify(payload),
             });
             setCurrentUser(updated);
             toast({
@@ -118,12 +121,12 @@ const ProfilePage = () => {
                             <HStack spacing={4}>
                                 <Avatar
                                     size="xl"
-                                    name={`${firstName || ""} ${lastName || ""}`}
-                                    src={`https://ui-avatars.com/api/?name=${firstName || ""}+${lastName || ""}&background=random&color=fff&size=128`}
+                                    name={currentUser.name || `${firstName} ${lastName}`}
+                                    src={`https://ui-avatars.com/api/?name=${currentUser.name || `${firstName}+${lastName}`}&background=random&color=fff&size=128`}
                                 />
                                 <VStack align="start">
                                     <Heading size="lg" color={headingColor}>
-                                        {firstName} {lastName}
+                                        {currentUser.name || `${firstName} ${lastName}`}
                                     </Heading>
                                     <Text color={textColor}>{email}</Text>
                                 </VStack>
@@ -132,22 +135,35 @@ const ProfilePage = () => {
                             <Heading size="md" color={headingColor}>
                                 Profile Information
                             </Heading>
-                            <FormControl>
-                                <FormLabel>First Name</FormLabel>
-                                <Input
-                                    type="text"
-                                    value={firstName}
-                                    onChange={(e) => setFirstName(e.target.value)}
-                                />
-                            </FormControl>
-                            <FormControl>
-                                <FormLabel>Last Name</FormLabel>
-                                <Input
-                                    type="text"
-                                    value={lastName}
-                                    onChange={(e) => setLastName(e.target.value)}
-                                />
-                            </FormControl>
+                            {user?.role === 'Employee' ? (
+                                <FormControl>
+                                    <FormLabel>Full Name</FormLabel>
+                                    <Input
+                                        type="text"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                    />
+                                </FormControl>
+                            ) : (
+                                <>
+                                    <FormControl>
+                                        <FormLabel>First Name</FormLabel>
+                                        <Input
+                                            type="text"
+                                            value={firstName}
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel>Last Name</FormLabel>
+                                        <Input
+                                            type="text"
+                                            value={lastName}
+                                            onChange={(e) => setLastName(e.target.value)}
+                                        />
+                                    </FormControl>
+                                </>
+                            )}
                             <FormControl>
                                 <FormLabel>Email Address</FormLabel>
                                 <Input
