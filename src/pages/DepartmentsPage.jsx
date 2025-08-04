@@ -96,6 +96,7 @@ const DepartmentsPage = () => {
 
     const fetchEmployees = async () => {
         try {
+            // Use ApiService.getEmployees which fetches users with role Employee
             const data = await ApiService.getEmployees()
             setEmployees(Array.isArray(data) ? data : data.results || [])
             console.log("Fetched employees:", data)

@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import ApiService from './apiService';
 
 const fetchEmployees = async () => {
-  const response = await fetch('/api/employees');
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-  return response.json();
+  // Use ApiService.getEmployees which now fetches users and filters by role
+  return await ApiService.getEmployees();
 };
 
 export const useGetEmployees = () => {

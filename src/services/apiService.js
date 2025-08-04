@@ -38,31 +38,43 @@ class ApiService {
         }
     }
 
-    // Employee endpoints
+    // Employee endpoints (now use users endpoint and filter by role)
     getEmployees = async () => {
-        return this.apiCall("/api/employees/")
+        const users = await this.apiCall("/api/users/")
+        // Filter users with role "Employee"
+        if (Array.isArray(users)) {
+            return users.filter(u => (u.role || "").toLowerCase() === "employee")
+        }
+        if (users.results) {
+            return users.results.filter(u => (u.role || "").toLowerCase() === "employee")
+        }
+        return []
     }
 
     getEmployee = async (id) => {
-        return this.apiCall(`/api/employees/${id}/`)
+        // Fetch user and check if role is Employee
+        const user = await this.apiCall(`/api/users/${id}/`)
+        return (user.role || "").toLowerCase() === "employee" ? user : null
     }
 
     createEmployee = async (data) => {
-        return this.apiCall("/api/employees/", {
+        // Set role to Employee
+        return this.apiCall("/api/users/", {
             method: "POST",
-            body: JSON.stringify(data),
+            body: JSON.stringify({ ...data, role: "Employee" }),
         })
     }
 
     updateEmployee = async (id, data) => {
-        return this.apiCall(`/api/employees/${id}/`, {
+        // Only allow update if role is Employee
+        return this.apiCall(`/api/users/${id}/`, {
             method: "PUT",
             body: JSON.stringify(data),
         })
     }
 
     deleteEmployee = async (id) => {
-        return this.apiCall(`/api/employees/${id}/`, {
+        return this.apiCall(`/api/users/${id}/`, {
             method: "DELETE",
         })
     }

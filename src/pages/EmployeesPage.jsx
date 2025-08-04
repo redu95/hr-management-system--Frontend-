@@ -91,6 +91,7 @@ const EmployeesPage = () => {
     const fetchEmployees = async () => {
         try {
             setLoading(true)
+            // Use ApiService.getEmployees which fetches users with role Employee
             const data = await ApiService.getEmployees()
             setEmployees(Array.isArray(data) ? data : data.results || [])
         } catch (error) {
@@ -108,6 +109,7 @@ const EmployeesPage = () => {
 
     const fetchDepartments = async () => {
         try {
+            // Optionally, if you want department managers, you may want all users here
             const data = await ApiService.getDepartments()
             setDepartments(Array.isArray(data) ? data : data.results || [])
         } catch (error) {
@@ -127,6 +129,7 @@ const EmployeesPage = () => {
             employee.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             employee.job_title?.toLowerCase().includes(searchTerm.toLowerCase())
+            employee.department_details?.name?.toLowerCase().includes(searchTerm.toLowerCase())
 
         const matchesDepartment = !filterDepartment || employee.department === Number.parseInt(filterDepartment)
         const matchesStatus = !filterStatus || employee.is_active.toString() === filterStatus
