@@ -14,7 +14,7 @@ class ApiService {
     }
 
     // Generic API call method
-    async apiCall(endpoint, options = {}) {
+    apiCall = async (endpoint, options = {}) => {
         const url = `${this.baseURL}${endpoint}`
         const config = {
             headers: this.getAuthHeaders(),
@@ -39,123 +39,129 @@ class ApiService {
     }
 
     // Employee endpoints
-    async getEmployees() {
+    getEmployees = async () => {
         return this.apiCall("/api/employees/")
     }
 
-    async getEmployee(id) {
+    getEmployee = async (id) => {
         return this.apiCall(`/api/employees/${id}/`)
     }
 
-    async createEmployee(data) {
+    createEmployee = async (data) => {
         return this.apiCall("/api/employees/", {
             method: "POST",
             body: JSON.stringify(data),
         })
     }
 
-    async updateEmployee(id, data) {
+    updateEmployee = async (id, data) => {
         return this.apiCall(`/api/employees/${id}/`, {
             method: "PUT",
             body: JSON.stringify(data),
         })
     }
 
-    async deleteEmployee(id) {
+    deleteEmployee = async (id) => {
         return this.apiCall(`/api/employees/${id}/`, {
             method: "DELETE",
         })
     }
 
     // Department endpoints
-    async getDepartments() {
+    getDepartments = async () => {
         return this.apiCall("/api/departments/")
     }
 
-    async getDepartment(id) {
+    getDepartment = async (id) => {
         return this.apiCall(`/api/departments/${id}/`)
     }
 
-    async createDepartment(data) {
+    createDepartment = async (data) => {
         return this.apiCall("/api/departments/", {
             method: "POST",
             body: JSON.stringify(data),
         })
     }
 
-    async updateDepartment(id, data) {
+    updateDepartment = async (id, data) => {
         return this.apiCall(`/api/departments/${id}/`, {
             method: "PUT",
             body: JSON.stringify(data),
         })
     }
 
-    async deleteDepartment(id) {
+    deleteDepartment = async (id) => {
         return this.apiCall(`/api/departments/${id}/`, {
             method: "DELETE",
         })
     }
 
     // Leave Request endpoints
-    async getLeaveRequests() {
+    getLeaveRequests = async () => {
+        // Get all leave requests for CEO/HR/Manager, or only own for Employee
+        // The backend should handle this logic, so just call the endpoint
         return this.apiCall("/api/leave-requests/")
     }
 
-    async getLeaveRequest(id) {
+    getLeaveRequest = async (id) => {
         return this.apiCall(`/api/leave-requests/${id}/`)
     }
 
-    async createLeaveRequest(data) {
+    createLeaveRequest = async (data) => {
+        // Remove employee field if present (backend assigns it)
+        const { employee, ...payload } = data
         return this.apiCall("/api/leave-requests/", {
             method: "POST",
-            body: JSON.stringify(data),
+            body: JSON.stringify(payload),
         })
     }
 
-    async updateLeaveRequest(id, data) {
+    updateLeaveRequest = async ({ id, data }) => {
+        // Only owner or CEO/HR/Manager can update (backend enforces)
         return this.apiCall(`/api/leave-requests/${id}/`, {
             method: "PATCH",
             body: JSON.stringify(data),
         })
     }
 
-    async deleteLeaveRequest(id) {
+    deleteLeaveRequest = async (id) => {
+        // Only owner or CEO/HR/Manager can delete (backend enforces)
         return this.apiCall(`/api/leave-requests/${id}/`, {
             method: "DELETE",
         })
     }
 
     // User endpoints
-    async getUsers() {
+    getUsers = async () => {
         return this.apiCall("/api/users/")
     }
 
-    async getUser(id) {
+    getUser = async (id) => {
         return this.apiCall(`/api/users/${id}/`)
     }
 
-    async createUser(data) {
+    createUser = async (data) => {
         return this.apiCall("/api/users/", {
             method: "POST",
             body: JSON.stringify(data),
         })
     }
 
-    async updateUser(id, data) {
+    updateUser = async (id, data) => {
         return this.apiCall(`/api/users/${id}/`, {
             method: "PUT",
             body: JSON.stringify(data),
         })
     }
 
-    async deleteUser(id) {
+    deleteUser = async (id) => {
         return this.apiCall(`/api/users/${id}/`, {
             method: "DELETE",
         })
     }
 
     // Fetch current user data
-    async fetchCurrentUser() {
+    fetchCurrentUser = async () => {
         const token = localStorage.getItem("accessToken")
         // Update the endpoint below if your backend uses a different path!
         const endpoint = "/api/auth/me/" // <-- Change this to the correct endpoint

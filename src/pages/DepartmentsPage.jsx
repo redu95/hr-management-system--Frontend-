@@ -98,6 +98,7 @@ const DepartmentsPage = () => {
         try {
             const data = await ApiService.getEmployees()
             setEmployees(Array.isArray(data) ? data : data.results || [])
+            console.log("Fetched employees:", data)
         } catch (error) {
             console.error("Failed to fetch employees:", error)
         }
@@ -125,9 +126,13 @@ const DepartmentsPage = () => {
 
     const handleSubmit = async (isEdit = false) => {
         try {
+            // Ensure manager is either a number or null
             const payload = {
                 ...formData,
-                manager: formData.manager ? Number.parseInt(formData.manager) : null,
+                manager:
+                    formData.manager && formData.manager !== ""
+                        ? Number(formData.manager)
+                        : null,
             }
 
             if (isEdit) {
@@ -203,7 +208,8 @@ const DepartmentsPage = () => {
             name: department.name || "",
             code: department.code || "",
             description: department.description || "",
-            manager: department.manager?.id?.toString() || "",
+            // Set manager to "" if not present, else to string id
+            manager: department.manager?.id ? String(department.manager.id) : "",
         })
         onEditOpen()
     }
@@ -444,7 +450,7 @@ const DepartmentsPage = () => {
                                     placeholder="Select a manager"
                                 >
                                     {employees.map((employee) => (
-                                        <option key={employee.id} value={employee.id}>
+                                        <option key={employee.id} value={String(employee.id)}>
                                             {employee.first_name} {employee.last_name} - {employee.job_title}
                                         </option>
                                     ))}
@@ -500,7 +506,7 @@ const DepartmentsPage = () => {
                                     placeholder="Select a manager"
                                 >
                                     {employees.map((employee) => (
-                                        <option key={employee.id} value={employee.id}>
+                                        <option key={employee.id} value={String(employee.id)}>
                                             {employee.first_name} {employee.last_name} - {employee.job_title}
                                         </option>
                                     ))}

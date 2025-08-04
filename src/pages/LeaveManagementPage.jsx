@@ -217,27 +217,34 @@ const LeaveManagementPage = () => {
 
     // Handle submitting the leave request
     const handleRequestLeave = () => {
-        createLeaveRequestMutation.mutate(leaveRequestForm)
+        // Do not send employee field, backend assigns it
+        const { start_date, end_date, reason } = leaveRequestForm
+        createLeaveRequestMutation.mutate({ start_date, end_date, reason })
     }
 
     // Handle approving a leave request
     const handleApprove = (leaveRequest) => {
+        // Only CEO/HR/Manager can approve
+        if (!canManageLeave) return
         updateLeaveRequestMutation.mutate({
             id: leaveRequest.id,
-            data: { status: "Approved" }, // Send "Approved" status
+            data: { status: "Approved" },
         })
     }
 
     // Handle denying a leave request
     const handleDeny = (leaveRequest) => {
+        // Only CEO/HR/Manager can deny
+        if (!canManageLeave) return
         updateLeaveRequestMutation.mutate({
             id: leaveRequest.id,
-            data: { status: "Denied" }, // Send "Denied" status
+            data: { status: "Denied" },
         })
     }
 
     // Handle deleting a leave request
     const handleDelete = () => {
+        // Only owner or CEO/HR/Manager can delete (UI allows, backend enforces)
         deleteLeaveRequestMutation.mutate(selectedRequest.id)
     }
 
@@ -255,7 +262,10 @@ const LeaveManagementPage = () => {
     const stats = getLeaveStats()
 
     // Filter leave requests
-    const filteredRequests = (leaveRequests?.results || []).filter((request) => {
+    const filteredRequests = (leaveRequests?.results || leaveRequests || []).filter((request) => {
+        // Only show own requests for Employee
+        if (!canManageLeave && request.employee !== user.id) return false
+
         const employee = employees.find((emp) => emp.id === request.employee) || {}
         const employeeName = `${employee.first_name || ""} ${employee.last_name || ""}`.toLowerCase()
 

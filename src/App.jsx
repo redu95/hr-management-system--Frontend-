@@ -17,6 +17,7 @@ import useAuthStore from "./store/authStore"
 import { BeatLoader } from "react-spinners"
 import ProfilePage from "./pages/ProfilePage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
+import ResetPasswordPage from "./pages/ResetPasswordPage"
 
 const queryClient = new QueryClient()
 
@@ -52,6 +53,7 @@ function App() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
           <Route

@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import {
     Box,
@@ -17,18 +15,20 @@ import {
     useColorModeValue,
 } from "@chakra-ui/react"
 import { motion } from "framer-motion"
-import { FaEnvelope } from "react-icons/fa"
-import { useNavigate } from "react-router-dom"
+import { FaKey } from "react-icons/fa"
+import { useLocation, useNavigate } from "react-router-dom"
 
 const MotionBox = motion(Box)
 const MotionCard = motion(Card)
 
-const ForgotPasswordPage = () => {
-    const [email, setEmail] = useState("")
-    const [loading, setLoading] = useState(false)
-    const [submitted, setSubmitted] = useState(false)
-    const toast = useToast()
+const ResetPasswordPage = () => {
+    const location = useLocation()
     const navigate = useNavigate()
+    const toast = useToast()
+    const [email, setEmail] = useState(location.state?.email || "")
+    const [otp, setOtp] = useState("")
+    const [newPassword, setNewPassword] = useState("")
+    const [loading, setLoading] = useState(false)
 
     const bgGradient = useColorModeValue("linear(to-br, blue.50, purple.50)", "linear(to-br, gray.900, purple.900)")
     const cardBg = useColorModeValue("white", "gray.800")
@@ -36,10 +36,10 @@ const ForgotPasswordPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!email) {
+        if (!email || !otp || !newPassword) {
             toast({
-                title: "Missing Email",
-                description: "Please enter your email address.",
+                title: "Missing Fields",
+                description: "Please fill in all fields.",
                 status: "warning",
                 duration: 3000,
                 isClosable: true,
@@ -48,35 +48,62 @@ const ForgotPasswordPage = () => {
         }
         setLoading(true)
         try {
-            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/request-password-reset/`, {
+            // Log payload for debugging
+            console.log("Reset password payload:", { email, otp, new_password: newPassword })
+            const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/auth/reset-password/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
+                body: JSON.stringify({ email, otp, new_password: newPassword }),
             })
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.message || "Failed to send reset email")
-            setLoading(false)
-            setSubmitted(true)
+            // Try to parse error details if present
+            let data
+            try {
+                data = await res.json()
+            } catch {
+                data = {}
+            }
+            if (!res.ok) {
+                // Log full backend response for debugging
+                console.error("Reset password error response:", data)
+                // User-friendly error extraction
+                let errorMsg =
+                    (Array.isArray(data.new_password) && data.new_password.length > 0)
+                        ? `Password: ${data.new_password[0]}`
+                        : (Array.isArray(data.otp) && data.otp.length > 0)
+                        ? `OTP: ${data.otp[0]}`
+                        : (Array.isArray(data.email) && data.email.length > 0)
+                        ? `Email: ${data.email[0]}`
+                        : data.message || data.detail || JSON.stringify(data) || "Failed to reset password"
+                toast({
+                    title: "Error",
+                    description: errorMsg,
+                    status: "error",
+                    duration: 4000,
+                    isClosable: true,
+                })
+                setLoading(false)
+                return
+            }
             toast({
-                title: "Reset Email Sent",
-                description: data.message || "If this email exists, you will receive password reset instructions.",
+                title: "Password Reset",
+                description: data.message || "Password reset successful.",
                 status: "success",
                 duration: 4000,
                 isClosable: true,
             })
-            // Navigate to reset password page, passing email
             setTimeout(() => {
-                navigate("/reset-password", { state: { email } })
+                navigate("/login")
             }, 1000)
         } catch (err) {
-            setLoading(false)
             toast({
                 title: "Error",
-                description: err.message || "Failed to send reset email.",
+                description: err.message || "Failed to reset password.",
                 status: "error",
                 duration: 4000,
                 isClosable: true,
             })
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -99,15 +126,15 @@ const ForgotPasswordPage = () => {
                                 alignItems="center"
                                 justifyContent="center"
                             >
-                                <FaEnvelope color="white" size="24" />
+                                <FaKey color="white" size="24" />
                             </Box>
                         </MotionBox>
                         <VStack spacing={2}>
                             <Heading size="xl" bgGradient="linear(to-r, blue.400, purple.500)" bgClip="text">
-                                Forgot Password
+                                Reset Password
                             </Heading>
                             <Text color={textColor}>
-                                Enter your email address and we'll send you instructions to reset your password.
+                                Enter the OTP sent to your email and your new password.
                             </Text>
                         </VStack>
                     </VStack>
@@ -130,7 +157,25 @@ const ForgotPasswordPage = () => {
                                             onChange={(e) => setEmail(e.target.value)}
                                             placeholder="Enter your email"
                                             size="lg"
-                                            disabled={loading || submitted}
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel>OTP</FormLabel>
+                                        <Input
+                                            value={otp}
+                                            onChange={(e) => setOtp(e.target.value)}
+                                            placeholder="Enter OTP"
+                                            size="lg"
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel>New Password</FormLabel>
+                                        <Input
+                                            type="password"
+                                            value={newPassword}
+                                            onChange={(e) => setNewPassword(e.target.value)}
+                                            placeholder="Enter new password"
+                                            size="lg"
                                         />
                                     </FormControl>
                                     <Button
@@ -139,9 +184,8 @@ const ForgotPasswordPage = () => {
                                         colorScheme="blue"
                                         type="submit"
                                         isLoading={loading}
-                                        isDisabled={submitted}
                                     >
-                                        {submitted ? "Email Sent" : "Send Reset Link"}
+                                        Reset Password
                                     </Button>
                                     <Button
                                         variant="ghost"
@@ -161,4 +205,4 @@ const ForgotPasswordPage = () => {
     )
 }
 
-export default ForgotPasswordPage
+export default ResetPasswordPage
