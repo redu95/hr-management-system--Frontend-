@@ -146,6 +146,7 @@ class ApiService {
     // User endpoints
     getUsers = async () => {
         return this.apiCall("/api/users/")
+        console.log(this.getUsers);
     }
 
     getUser = async (id) => {

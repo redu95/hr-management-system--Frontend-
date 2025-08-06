@@ -129,7 +129,7 @@ const EmployeesPage = () => {
             employee.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             employee.job_title?.toLowerCase().includes(searchTerm.toLowerCase())
-            employee.department_details?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+            employee.department?.name?.toLowerCase().includes(searchTerm.toLowerCase())
 
         const matchesDepartment = !filterDepartment || employee.department === Number.parseInt(filterDepartment)
         const matchesStatus = !filterStatus || employee.is_active.toString() === filterStatus
@@ -385,7 +385,7 @@ const EmployeesPage = () => {
                                                 <Td>{employee.job_title}</Td>
                                                 <Td>
                                                     <Badge colorScheme="blue" variant="subtle">
-                                                        {employee.department_details?.name || "N/A"}
+                                                        {employee.department?.name || "N/A"}
                                                     </Badge>
                                                 </Td>
                                                 <Td>{employee.phone_number || "N/A"}</Td>
