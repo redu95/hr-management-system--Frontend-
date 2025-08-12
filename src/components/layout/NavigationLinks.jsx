@@ -66,9 +66,15 @@ const NavigationLinks = ({ onLinkClick }) => {
                 </RoleBasedComponent>
 
                 {/* Leave Management - Different access levels */}
-                <NavItem to="/leave" icon={FaCalendarAlt} onClick={onLinkClick}>
-                    {user?.role === "Employee" ? "My Leave" : "Leave Management"}
-                </NavItem>
+                {user?.role === "Employee" ? (
+                    <NavItem to="/my-leave" icon={FaCalendarAlt} onClick={onLinkClick}>
+                        My Leave
+                    </NavItem>
+                ) : (
+                    <NavItem to="/leave" icon={FaCalendarAlt} onClick={onLinkClick}>
+                        Leave Management
+                    </NavItem>
+                )}
 
                 {/* Reports - Available to CEO, Manager, HR */}
                 <RoleBasedComponent requiredPermission="canViewReports">

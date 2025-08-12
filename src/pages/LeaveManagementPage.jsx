@@ -101,6 +101,7 @@ const LeaveManagementPage = () => {
         start_date: "",
         end_date: "",
         reason: "",
+        // employee: only for HR, not for Employee
     })
 
     // State for employees
@@ -217,9 +218,17 @@ const LeaveManagementPage = () => {
 
     // Handle submitting the leave request
     const handleRequestLeave = () => {
-        // Do not send employee field, backend assigns it
-        const { start_date, end_date, reason } = leaveRequestForm
-        createLeaveRequestMutation.mutate({ start_date, end_date, reason })
+        let payload = {
+            start_date: leaveRequestForm.start_date,
+            end_date: leaveRequestForm.end_date,
+            reason: leaveRequestForm.reason,
+            // ...other fields if needed
+        }
+        // If HR, include employee field
+        if (user?.role === "HR" && leaveRequestForm.employee) {
+            payload.employee = leaveRequestForm.employee
+        }
+        createLeaveRequestMutation.mutate(payload)
     }
 
     // Handle approving a leave request
@@ -756,6 +765,22 @@ const LeaveManagementPage = () => {
                                     rows={3}
                                 />
                             </FormControl>
+                            {user?.role === "HR" && (
+                                <FormControl isRequired>
+                                    <FormLabel>Employee</FormLabel>
+                                    <Select
+                                        placeholder="Select employee"
+                                        value={leaveRequestForm.employee}
+                                        onChange={(e) => handleFormChange(e, "employee")}
+                                    >
+                                        {employees.map((employee) => (
+                                            <option key={employee.id} value={employee.id}>
+                                                {employee.first_name} {employee.last_name}
+                                            </option>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                            )}
                         </VStack>
                     </ModalBody>
                     <ModalFooter>

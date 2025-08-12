@@ -1,3 +1,18 @@
+// Format applied_date as relative time
+const getRelativeTime = (dateString) => {
+    if (!dateString) return "N/A";
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffMs = now - date;
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 60) return `${diffSec} seconds ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} minutes ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr} hours ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    return `${diffDay} days ago`;
+}
 "use client"
 
 import { useState, useEffect } from "react"
@@ -66,7 +81,7 @@ import useAuthStore from "../store/authStore"
 
 const MotionBox = motion(Box)
 
-const LeaveManagementPage = () => {
+const MyLeave = () => {
     const queryClient = useQueryClient()
     const chakraToast = useToast() // Use Chakra UI's toast
     const { isOpen: isAddOpen, onOpen: onAddOpen, onClose: onAddClose } = useDisclosure()
@@ -262,9 +277,10 @@ const LeaveManagementPage = () => {
 
     // Filter leave requests
     const filteredRequests = (leaveRequests?.results || leaveRequests || []).filter((request) => {
-        // Only show own requests for Employee
-        if (!canManageLeave && request.employee !== user.id) return false
+        // Debug logs for filtering
+        console.log("🧑‍💻 [MyLeave] user.id:", user?.id, "| request.employee:", request.employee)
 
+        // Remove redundant filtering for employees
         const employee = employees.find((emp) => emp.id === request.employee) || {}
         const employeeName = `${employee.first_name || ""} ${employee.last_name || ""}`.toLowerCase()
 
@@ -513,7 +529,7 @@ const LeaveManagementPage = () => {
                                                     </Td>
                                                     <Td>
                                                         <Text fontSize="sm" color={textColor}>
-                                                            {request.created_at ? new Date(request.created_at).toLocaleDateString() : "N/A"}
+                                                            {getRelativeTime(request.applied_date)}
                                                         </Text>
                                                     </Td>
                                                     <Td>
@@ -676,7 +692,7 @@ const LeaveManagementPage = () => {
                                             SUBMITTED ON
                                         </Text>
                                         <Text color={headingColor}>
-                                            {selectedRequest.created_at ? new Date(selectedRequest.created_at).toLocaleDateString() : "N/A"}
+                                            {getRelativeTime(selectedRequest.applied_date)}
                                         </Text>
                                     </Box>
                                 </Grid>
@@ -725,4 +741,4 @@ const LeaveManagementPage = () => {
     )
 }
 
-export default LeaveManagementPage
+export default MyLeave

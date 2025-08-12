@@ -7,6 +7,7 @@ import UnauthorizedPage from "./pages/UnauthorizedPage"
 import DashboardPage from "./pages/DashboardPage"
 import Employees from "./pages/EmployeesPage"
 import LeaveManagementPage from "./pages/LeaveManagementPage"
+import MyLeave from "./pages/MyLeave"
 import Reports from "./pages/ReportsPage"
 import Settings from "./pages/Settings"
 import Logout from "./pages/Logout"
@@ -84,6 +85,7 @@ function App() {
             />
 
             <Route path="/leave" element={<LeaveManagementPage />} />
+            <Route path="/my-leave" element={<MyLeave />} />
 
             <Route
               path="/reports"

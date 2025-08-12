@@ -25,6 +25,19 @@ class ApiService {
 
         try {
             const response = await fetch(url, config)
+            // If access token expired or unauthorized, clear auth and redirect to login
+            if (response.status === 401) {
+                console.error(`❌ [API] Unauthorized (${endpoint}), redirecting to login`)
+                // Clear stored tokens and user info
+                localStorage.removeItem("accessToken")
+                localStorage.removeItem("refreshToken")
+                localStorage.removeItem("user")
+                localStorage.removeItem("isAuthenticated")
+                // Redirect to login page
+                window.location.href = "/login"
+                // Stop further handling
+                return
+            }
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}))
@@ -112,17 +125,26 @@ class ApiService {
     getLeaveRequests = async () => {
         // Get all leave requests for CEO/HR/Manager, or only own for Employee
         // The backend should handle this logic, so just call the endpoint
-        return this.apiCall("/api/leave-requests/")
+        console.log("Fetching leave request:")
+        console.log("endpoint: /api/leaves/leave-requests/")
+        return this.apiCall("/api/leaves/leave-requests/")
     }
 
     getLeaveRequest = async (id) => {
-        return this.apiCall(`/api/leave-requests/${id}/`)
+        return this.apiCall(`/api/leaves/leave-requests/${id}/`)
     }
 
     createLeaveRequest = async (data) => {
-        // Remove employee field if present (backend assigns it)
-        const { employee, ...payload } = data
-        return this.apiCall("/api/leave-requests/", {
+        // If an explicit employee id is provided (e.g. HR creating on behalf of someone), keep it.
+        // Otherwise (self-service), just send start_date/end_date/reason.
+        const { start_date, end_date, reason, employee } = data || {}
+        const payload = {
+            start_date,
+            end_date,
+            reason,
+            ...(employee ? { employee } : {}),
+        }
+        return this.apiCall("/api/leaves/leave-requests/", {
             method: "POST",
             body: JSON.stringify(payload),
         })
@@ -130,7 +152,7 @@ class ApiService {
 
     updateLeaveRequest = async ({ id, data }) => {
         // Only owner or CEO/HR/Manager can update (backend enforces)
-        return this.apiCall(`/api/leave-requests/${id}/`, {
+        return this.apiCall(`/api/leaves/leave-requests/${id}/`, {
             method: "PATCH",
             body: JSON.stringify(data),
         })
@@ -138,7 +160,7 @@ class ApiService {
 
     deleteLeaveRequest = async (id) => {
         // Only owner or CEO/HR/Manager can delete (backend enforces)
-        return this.apiCall(`/api/leave-requests/${id}/`, {
+        return this.apiCall(`/api/leaves/leave-requests/${id}/`, {
             method: "DELETE",
         })
     }
@@ -163,6 +185,14 @@ class ApiService {
     updateUser = async (id, data) => {
         return this.apiCall(`/api/users/${id}/`, {
             method: "PUT",
+            body: JSON.stringify(data),
+        })
+    }
+
+    // Added method for employees to update their own profile.
+    updateCurrentUser = async (data) => {
+        return this.apiCall("/api/auth/me/", {
+            method: "PATCH",
             body: JSON.stringify(data),
         })
     }
