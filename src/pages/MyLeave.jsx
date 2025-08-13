@@ -95,15 +95,15 @@ const MyLeave = () => {
     const headingColor = useColorModeValue("gray.800", "gray.100")
     const hoverBg = useColorModeValue("gray.50", "gray.700")
     const statusColors = {
-        Approved: useColorModeValue("green", "green.500"),
-        Denied: useColorModeValue("red", "red.500"),
-        Pending: useColorModeValue("yellow", "yellow.500"),
+        APPROVED: useColorModeValue("green", "green.500"),
+        DENIED: useColorModeValue("red", "red.500"),
+        PENDING: useColorModeValue("yellow", "yellow.500"),
         default: useColorModeValue("gray", "gray.500"),
     }
     const statusIcons = {
-        Approved: <FaCheck />,
-        Denied: <FaTimes />,
-        Pending: <FaClock />,
+        APPROVED: <FaCheck />,
+        DENIED: <FaTimes />,
+        PENDING: <FaClock />,
         default: <FaHourglass />,
     }
 
@@ -304,12 +304,14 @@ const MyLeave = () => {
 
     // Get status color
     const getStatusColor = (status) => {
-        return statusColors[status] || statusColors.default
+        if (!status) return statusColors.default
+        return statusColors[status.toUpperCase()] || statusColors.default
     }
 
     // Get status icon
     const getStatusIcon = (status) => {
-        return statusIcons[status] || statusIcons.default
+        if (!status) return statusIcons.default
+        return statusIcons[status.toUpperCase()] || statusIcons.default
     }
 
     if (isLoading) {
