@@ -141,7 +141,7 @@ const ForgotPasswordPage = () => {
                                         isLoading={loading}
                                         isDisabled={submitted}
                                     >
-                                        {submitted ? "Email Sent" : "Send Reset Link"}
+                                        {submitted ? "Email Sent" : "Send OTP"}
                                     </Button>
                                     <Button
                                         variant="ghost"

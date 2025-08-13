@@ -197,6 +197,14 @@ class ApiService {
         })
     }
 
+    // Change password (authenticated)
+    changePassword = async ({ old_password, new_password }) => {
+        return this.apiCall("/api/auth/change-password/", {
+            method: "POST",
+            body: JSON.stringify({ old_password, new_password }),
+        })
+    }
+
     deleteUser = async (id) => {
         return this.apiCall(`/api/users/${id}/`, {
             method: "DELETE",
