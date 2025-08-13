@@ -168,7 +168,16 @@ class ApiService {
     // User endpoints
     getUsers = async () => {
         return this.apiCall("/api/users/")
-        console.log(this.getUsers);
+    }
+
+    // Generic user search with query params (e.g. { role: 'employee', ordering: '-id' })
+    searchUsers = async (params = {}) => {
+        const query = new URLSearchParams()
+        Object.entries(params).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== "") query.append(k, v)
+        })
+        const qs = query.toString()
+        return this.apiCall(`/api/users/${qs ? `?${qs}` : ""}`)
     }
 
     getUser = async (id) => {

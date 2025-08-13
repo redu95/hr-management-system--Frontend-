@@ -49,7 +49,7 @@ const LoginPage = () => {
     const demoCredentials = [
         { role: "CEO", credential: "t@g.com", password: "1234", color: "purple" },
         { role: "HR", credential: "hr_manager@example.com", password: "1234", color: "green" },
-        { role: "Manager", credential: "test@example.com", password: "1234", color: "blue" },
+        { role: "Manager", credential: "manager@example.com", password: "1234", color: "blue" },
         { role: "Employee", credential: "employee@company.com", password: "password123", color: "gray" },
     ]
 
