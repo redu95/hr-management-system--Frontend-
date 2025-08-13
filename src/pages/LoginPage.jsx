@@ -50,7 +50,7 @@ const LoginPage = () => {
         { role: "CEO", credential: "t@g.com", password: "1234", color: "purple" },
         { role: "HR", credential: "hr_manager@example.com", password: "1234", color: "green" },
         { role: "Manager", credential: "manager@example.com", password: "1234", color: "blue" },
-        { role: "Employee", credential: "employee@company.com", password: "password123", color: "gray" },
+        { role: "Employee", credential: "fenanyosef@gmail.com", password: "1234", color: "gray" },
     ]
 
     const handleLogin = async (event) => {
