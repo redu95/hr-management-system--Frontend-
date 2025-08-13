@@ -193,6 +193,46 @@ const KpiCard = ({ icon: Icon, title, value, color, index, loading = false }) =>
     )
 }
 
+// Generic simple bar chart for re-use (age distribution, headcount, etc.)
+const SimpleBarChart = ({ title, dataMap = {}, loading }) => {
+    const labels = Object.keys(dataMap)
+    const counts = Object.values(dataMap)
+    return (
+        <Box bg={useColorModeValue("white", "gray.800")} p={6} borderRadius="xl" shadow="lg" h="full" position="relative">
+            <Heading size="sm" mb={4}>{title}</Heading>
+            {loading && (
+                <VStack position="absolute" inset={0} justify="center" bg={useColorModeValue("whiteAlpha.700", "blackAlpha.400")} backdropFilter="blur(2px)">
+                    <Skeleton height="20px" w="60%" />
+                    <Skeleton height="180px" w="90%" />
+                </VStack>
+            )}
+            <Box h="200px">
+                <Bar
+                    data={{
+                        labels: labels.length ? labels : ["-"],
+                        datasets: [
+                            {
+                                label: title,
+                                data: counts.length ? counts : [0],
+                                backgroundColor: "rgba(99,102,241,0.6)",
+                                borderColor: "rgba(99,102,241,1)",
+                                borderWidth: 1,
+                                borderRadius: 4,
+                            },
+                        ],
+                    }}
+                    options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { x: { grid: { display: false } }, y: { beginAtZero: true } },
+                    }}
+                />
+            </Box>
+        </Box>
+    )
+}
+
 const DashboardPage = () => {
     const { user } = useAuthStore()
 
@@ -220,6 +260,7 @@ const DashboardPage = () => {
     // Normalize role helper (server may return lowercase)
     const role = (user?.role || currentUser?.role || "").toString().toLowerCase()
     const isEmployee = role === "employee"
+    const isCEO = role === "ceo"
     const isManagerial = ["manager", "hr", "ceo"].includes(role)
 
     // Fetch departments & users for managerial roles to build headcount chart
@@ -310,6 +351,7 @@ const DashboardPage = () => {
     const getKpis = () => {
         const dash = currentUser.dashboard || {}
 
+        // Employee self-service KPIs
         if (isEmployee) {
             return [
                 { icon: FaUsers, title: "My Team Size", value: dash.my_team_size ?? "-", color: "sky" },
@@ -319,49 +361,40 @@ const DashboardPage = () => {
             ]
         }
 
-        // Managerial roles
-        const base = [
-            { icon: FaUsers, title: "My Team Size", value: dash.my_team_size ?? "-", color: "sky" },
-            { icon: FaUserMinus, title: "Employees on Leave", value: dash.employees_on_leave ?? "-", color: "amber" },
-            { icon: FaInbox, title: "Pending Leave Requests", value: dash.pending_leave_requests ?? "-", color: "rose" },
-            { icon: FaUserPlus, title: "New Hires (Month)", value: dash.new_hires_this_month ?? "-", color: "green" },
-        ]
-
-        // Derived metrics (only if data available)
-        const derived = []
-        const size = Number(dash.my_team_size) || 0
-        const onLeave = Number(dash.employees_on_leave) || 0
-        const pending = Number(dash.pending_leave_requests) || 0
-        const reviews = Number(dash.performance_reviews_this_month) || 0
-        const avgScore = dash.team_avg_performance_score
-
-        if (size > 0) {
-            derived.push({
-                icon: FaUsers,
-                title: "Team Availability %",
-                value: `${(((size - onLeave) / size) * 100).toFixed(0)}%`,
-                color: "teal",
-            })
-            derived.push({
-                icon: FaUserMinus,
-                title: "Leave Rate %",
-                value: `${((onLeave / size) * 100).toFixed(0)}%`,
-                color: "purple",
-            })
-            derived.push({
-                icon: FaInbox,
-                title: "Pending / Employee",
-                value: size ? (pending / size).toFixed(2) : "-",
-                color: "amber",
-            })
-            derived.push({
-                icon: FaInbox,
-                title: "Review Coverage %",
-                value: `${Math.min(100, ((reviews / size) * 100).toFixed(0))}%`,
-                color: "rose",
-            })
+        // CEO high-level KPIs
+        if (isCEO) {
+            return [
+                { icon: FaUsers, title: "Active Users", value: dash.headcount?.total_active_users ?? "-", color: "sky" },
+                { icon: FaUserPlus, title: "Hires (This Month)", value: dash.hires_this_month ?? "-", color: "green" },
+                { icon: FaUserMinus, title: "Attrition Rate (30d)", value: dash.attrition_last_30_days?.rate != null ? `${(dash.attrition_last_30_days.rate * 100).toFixed(1)}%` : "-", color: "purple" },
+                { icon: FaInbox, title: "Pending Leave", value: dash.leave?.pending_requests ?? "-", color: "amber" },
+                { icon: FaUserMinus, title: "On Leave Today", value: dash.leave?.employees_on_approved_leave_today ?? "-", color: "rose" },
+                { icon: FaUsers, title: "Avg Perf. Score", value: dash.performance?.average_score ?? "-", color: "teal" },
+            ]
         }
 
+        // Manager / HR KPIs
+        const dashTeamSize = dash.my_team_size ?? dash.headcount?.employees
+        const base = [
+            { icon: FaUsers, title: "My Team Size", value: dashTeamSize ?? "-", color: "sky" },
+            { icon: FaUserMinus, title: "Employees on Leave", value: dash.employees_on_leave ?? dash.leave?.employees_on_approved_leave_today ?? "-", color: "amber" },
+            { icon: FaInbox, title: "Pending Leave Requests", value: dash.pending_leave_requests ?? dash.leave?.pending_requests ?? "-", color: "rose" },
+            { icon: FaUserPlus, title: "New Hires (Month)", value: dash.new_hires_this_month ?? dash.hires_this_month ?? "-", color: "green" },
+        ]
+
+        // Derived metrics
+        const derived = []
+        const size = Number(dashTeamSize) || 0
+        const onLeave = Number(dash.employees_on_leave ?? dash.leave?.employees_on_approved_leave_today) || 0
+        const pending = Number(dash.pending_leave_requests ?? dash.leave?.pending_requests) || 0
+        const reviews = Number(dash.performance_reviews_this_month ?? dash.performance?.reviews_this_month) || 0
+
+        if (size > 0) {
+            derived.push({ icon: FaUsers, title: "Availability %", value: `${(((size - onLeave) / size) * 100).toFixed(0)}%`, color: "teal" })
+            derived.push({ icon: FaUserMinus, title: "Leave Rate %", value: `${((onLeave / size) * 100).toFixed(0)}%`, color: "purple" })
+            derived.push({ icon: FaInbox, title: "Pending / Emp", value: size ? (pending / size).toFixed(2) : "-", color: "amber" })
+            derived.push({ icon: FaInbox, title: "Review Coverage %", value: `${Math.min(100, ((reviews / size) * 100).toFixed(0))}%`, color: "rose" })
+        }
         return [...base, ...derived]
     }
 
@@ -528,6 +561,91 @@ const DashboardPage = () => {
                         </RoleBasedComponent>
                     </GridItem>
                 </Grid>
+
+                {isCEO && (
+                    <VStack align="stretch" spacing={8} mt={12}>
+                        <Heading size="lg">Executive Overview</Heading>
+                        <Grid templateColumns={{ base: '1fr', md: 'repeat(2,1fr)', xl: 'repeat(4,1fr)' }} gap={6}>
+                            <Box bg={useColorModeValue('white', 'gray.800')} p={6} borderRadius="xl" shadow="lg">
+                                <Heading size="sm" mb={4}>Headcount Breakdown</Heading>
+                                <VStack align="stretch" spacing={2} fontSize="sm">
+                                    <HStack justify="space-between"><Text>Total Active</Text><Text fontWeight="bold">{currentUser.dashboard?.headcount?.total_active_users ?? '-'}</Text></HStack>
+                                    <HStack justify="space-between"><Text>Employees</Text><Text fontWeight="bold">{currentUser.dashboard?.headcount?.employees ?? '-'}</Text></HStack>
+                                    <HStack justify="space-between"><Text>Managers</Text><Text fontWeight="bold">{currentUser.dashboard?.headcount?.managers ?? '-'}</Text></HStack>
+                                    <HStack justify="space-between"><Text>HR</Text><Text fontWeight="bold">{currentUser.dashboard?.headcount?.hr ?? '-'}</Text></HStack>
+                                </VStack>
+                            </Box>
+                            <Box bg={useColorModeValue('white', 'gray.800')} p={6} borderRadius="xl" shadow="lg">
+                                <Heading size="sm" mb={4}>Attrition (Last 30d)</Heading>
+                                <VStack spacing={3} align="stretch" fontSize="sm">
+                                    <HStack justify="space-between"><Text>Count</Text><Text fontWeight="bold">{currentUser.dashboard?.attrition_last_30_days?.count ?? '-'}</Text></HStack>
+                                    <HStack justify="space-between"><Text>Rate</Text><Text fontWeight="bold">{currentUser.dashboard?.attrition_last_30_days?.rate != null ? (currentUser.dashboard.attrition_last_30_days.rate * 100).toFixed(1) + '%' : '-'}</Text></HStack>
+                                </VStack>
+                            </Box>
+                            <Box bg={useColorModeValue('white', 'gray.800')} p={6} borderRadius="xl" shadow="lg">
+                                <Heading size="sm" mb={4}>Leave & Attendance Today</Heading>
+                                <VStack spacing={2} align="stretch" fontSize="sm">
+                                    <HStack justify="space-between"><Text>Pending Leave</Text><Text fontWeight="bold">{currentUser.dashboard?.leave?.pending_requests ?? '-'}</Text></HStack>
+                                    <HStack justify="space-between"><Text>On Approved Leave</Text><Text fontWeight="bold">{currentUser.dashboard?.leave?.employees_on_approved_leave_today ?? '-'}</Text></HStack>
+                                    <HStack justify="space-between"><Text>Present</Text><Text fontWeight="bold">{currentUser.dashboard?.attendance_today?.present ?? '-'}</Text></HStack>
+                                    <HStack justify="space-between"><Text>Absent</Text><Text fontWeight="bold">{currentUser.dashboard?.attendance_today?.absent ?? '-'}</Text></HStack>
+                                </VStack>
+                            </Box>
+                            <Box bg={useColorModeValue('white', 'gray.800')} p={6} borderRadius="xl" shadow="lg">
+                                <Heading size="sm" mb={4}>Performance</Heading>
+                                <VStack spacing={2} align="stretch" fontSize="sm">
+                                    <HStack justify="space-between"><Text>Avg Score</Text><Text fontWeight="bold">{currentUser.dashboard?.performance?.average_score ?? '-'}</Text></HStack>
+                                    <HStack justify="space-between"><Text>Reviews (Month)</Text><Text fontWeight="bold">{currentUser.dashboard?.performance?.reviews_this_month ?? '-'}</Text></HStack>
+                                </VStack>
+                                <Box mt={4}>
+                                    <Text fontSize="xs" mb={2} fontWeight="semibold">Top Performers</Text>
+                                    <VStack align="stretch" spacing={1} maxH="100px" overflowY="auto">
+                                        {currentUser.dashboard?.performance?.top_performers?.length ? (
+                                            currentUser.dashboard.performance.top_performers.map((p, i) => <Text key={i} fontSize="xs">• {p.name || p.first_name ? `${p.first_name || ''} ${p.last_name || ''}`.trim() : p}</Text>)
+                                        ) : <Text fontSize="xs" color="gray.500">No data</Text>}
+                                    </VStack>
+                                </Box>
+                            </Box>
+                        </Grid>
+
+                        <Grid templateColumns={{ base: '1fr', md: '2fr 1fr' }} gap={8}>
+                            <Box>
+                                <Heading size="md" mb={4}>Departments</Heading>
+                                <Box bg={useColorModeValue('white', 'gray.800')} p={0} borderRadius="xl" shadow="lg" overflow="hidden">
+                                    <Box as="table" w="full" fontSize="sm">
+                                        <Box as="thead" bg={useColorModeValue('gray.100', 'gray.700')}>
+                                            <Box as="tr">
+                                                <Box as="th" textAlign="left" p={3}>Name</Box>
+                                                <Box as="th" textAlign="right" p={3}>Employees</Box>
+                                            </Box>
+                                        </Box>
+                                        <Box as="tbody">
+                                            {(currentUser.dashboard?.departments || []).map(d => (
+                                                <Box as="tr" key={d.id} _hover={{ bg: useColorModeValue('gray.50', 'gray.700') }}>
+                                                    <Box as="td" p={3}>{d.name}</Box>
+                                                    <Box as="td" p={3} textAlign="right" fontWeight="semibold">{d.emp_count}</Box>
+                                                </Box>
+                                            ))}
+                                            {!(currentUser.dashboard?.departments || []).length && (
+                                                <Box as="tr"><Box as="td" p={3} colSpan={2}>No department data</Box></Box>
+                                            )}
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            </Box>
+                            <VStack spacing={6} align="stretch">
+                                <SimpleBarChart
+                                    title="Age Distribution"
+                                    dataMap={currentUser.dashboard?.age_distribution || {}}
+                                />
+                                <SimpleBarChart
+                                    title="Dept Headcount"
+                                    dataMap={(currentUser.dashboard?.departments || []).reduce((acc, d) => { acc[d.name] = d.emp_count; return acc; }, {})}
+                                />
+                            </VStack>
+                        </Grid>
+                    </VStack>
+                )}
             </Container>
             {/* Single Field Edit Modal */}
             <Modal isOpen={isOpen} onClose={() => { if (!isSaving) onClose() }} isCentered>
