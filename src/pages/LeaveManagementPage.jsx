@@ -81,15 +81,15 @@ const LeaveManagementPage = () => {
     const headingColor = useColorModeValue("gray.800", "gray.100")
     const hoverBg = useColorModeValue("gray.50", "gray.700")
     const statusColors = {
-        Approved: useColorModeValue("green", "green.500"),
-        Denied: useColorModeValue("red", "red.500"),
-        Pending: useColorModeValue("yellow", "yellow.500"),
+        APPROVED: useColorModeValue("green", "green.500"),
+        DENIED: useColorModeValue("red", "red.500"),
+        PENDING: useColorModeValue("yellow", "yellow.500"),
         default: useColorModeValue("gray", "gray.500"),
     }
     const statusIcons = {
-        Approved: <FaCheck />,
-        Denied: <FaTimes />,
-        Pending: <FaClock />,
+        APPROVED: <FaCheck />,
+        DENIED: <FaTimes />,
+        PENDING: <FaClock />,
         default: <FaHourglass />,
     }
 
@@ -109,6 +109,8 @@ const LeaveManagementPage = () => {
     const [searchTerm, setSearchTerm] = useState("")
     const [filterStatus, setFilterStatus] = useState("")
     const [selectedRequest, setSelectedRequest] = useState(null)
+    // State for view modal status change
+    const [viewStatus, setViewStatus] = useState("")
 
     // Fetch leave requests
     const { isLoading, data: leaveRequests } = useQuery({
@@ -237,7 +239,7 @@ const LeaveManagementPage = () => {
         if (!canManageLeave) return
         updateLeaveRequestMutation.mutate({
             id: leaveRequest.id,
-            data: { status: "Approved" },
+            data: { status: "APPROVED" },
         })
     }
 
@@ -247,7 +249,7 @@ const LeaveManagementPage = () => {
         if (!canManageLeave) return
         updateLeaveRequestMutation.mutate({
             id: leaveRequest.id,
-            data: { status: "Denied" },
+            data: { status: "DENIED" },
         })
     }
 
@@ -305,6 +307,28 @@ const LeaveManagementPage = () => {
     const getStatusIcon = (status) => {
         return statusIcons[status] || statusIcons.default
     }
+
+    // Format applied_date as relative time
+    const getRelativeTime = (dateString) => {
+        if (!dateString) return "N/A"
+        const now = new Date()
+        const date = new Date(dateString)
+        const diffMs = now - date
+        const diffSec = Math.floor(diffMs / 1000)
+        if (diffSec < 60) return `${diffSec} seconds ago`
+        const diffMin = Math.floor(diffSec / 60)
+        if (diffMin < 60) return `${diffMin} minutes ago`
+        const diffHr = Math.floor(diffMin / 60)
+        if (diffHr < 24) return `${diffHr} hours ago`
+        const diffDay = Math.floor(diffHr / 24)
+        return `${diffDay} days ago`
+    }
+
+    // Sync viewStatus when selectedRequest changes
+    useEffect(() => {
+        // Sync viewStatus when selectedRequest changes (use optional chaining)
+        setViewStatus(selectedRequest?.status || "")
+    }, [selectedRequest])
 
     if (isLoading) {
         return (
@@ -427,9 +451,9 @@ const LeaveManagementPage = () => {
                                         value={filterStatus}
                                         onChange={(e) => setFilterStatus(e.target.value)}
                                     >
-                                        <option value="Pending">Pending</option>
-                                        <option value="Approved">Approved</option>
-                                        <option value="Denied">Denied</option>
+                                        <option value="PENDING">Pending</option>
+                                        <option value="APPROVED">Approved</option>
+                                        <option value="DENIED">Denied</option>
                                     </Select>
                                 </GridItem>
                             </Grid>
@@ -515,7 +539,7 @@ const LeaveManagementPage = () => {
                                                                 </Td>
                                                                 <Td>
                                                                     <Text fontSize="sm" color={textColor}>
-                                                                        {request.created_at ? new Date(request.created_at).toLocaleDateString() : "N/A"}
+                                                                        {getRelativeTime(request.applied_date)}
                                                                     </Text>
                                                                 </Td>
                                                                 <Td>
@@ -668,8 +692,8 @@ const LeaveManagementPage = () => {
                                                             </Badge>
                                                         </Td>
                                                         <Td>
-                                                            <Text fontSize="sm" color={textColor}>
-                                                                {request.created_at ? new Date(request.created_at).toLocaleDateString() : "N/A"}
+                                                            <Text fontSize="sm" fontWeight="700" color={textColor}>
+                                                                {getRelativeTime(request.applied_date)}
                                                             </Text>
                                                         </Td>
                                                         <Td>
@@ -817,8 +841,8 @@ const LeaveManagementPage = () => {
                                         <Text fontSize="sm" color={textColor}>
                                             {employees.find((e) => e.id === selectedRequest.employee)?.job_title}
                                         </Text>
-                                        <Badge colorScheme={getStatusColor(selectedRequest.status)} mt={1}>
-                                            {selectedRequest.status}
+                                        <Badge colorScheme={getStatusColor(selectedRequest?.status)} mt={1}>
+                                            {selectedRequest?.status}
                                         </Badge>
                                     </VStack>
                                 </HStack>
@@ -849,7 +873,7 @@ const LeaveManagementPage = () => {
                                             SUBMITTED ON
                                         </Text>
                                         <Text color={headingColor}>
-                                            {selectedRequest.created_at ? new Date(selectedRequest.created_at).toLocaleDateString() : "N/A"}
+                                            {getRelativeTime(selectedRequest.applied_date)}
                                         </Text>
                                     </Box>
                                 </Grid>
@@ -859,11 +883,35 @@ const LeaveManagementPage = () => {
                                     </Text>
                                     <Text color={headingColor}>{selectedRequest.reason || "No reason provided"}</Text>
                                 </Box>
+                                {/* Manager status update */}
+                                {canManageLeave && (
+                                    <FormControl>
+                                        <FormLabel>Change Status</FormLabel>
+                                        <Select value={viewStatus} onChange={(e) => setViewStatus(e.target.value)}>
+                                            <option value="PENDING">Pending</option>
+                                            <option value="APPROVED">Approved</option>
+                                            <option value="DENIED">Denied</option>
+                                        </Select>
+                                    </FormControl>
+                                )}
                             </VStack>
                         )}
                     </ModalBody>
                     <ModalFooter>
-                        <Button onClick={onViewClose}>Close</Button>
+                        {canManageLeave && selectedRequest && (
+                            <Button
+                                colorScheme="blue"
+                                mr={3}
+                                onClick={() => updateLeaveRequestMutation.mutate({ id: selectedRequest.id, data: { status: viewStatus } })}
+                                isLoading={updateLeaveRequestMutation.isLoading}
+                                isDisabled={viewStatus === selectedRequest?.status}
+                            >
+                                Save Changes
+                            </Button>
+                        )}
+                        <Button variant="ghost" onClick={onViewClose}>
+                            Close
+                        </Button>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
