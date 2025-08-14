@@ -55,10 +55,14 @@ import { motion } from "framer-motion"
 import { FaUsers, FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaDownload, FaChevronDown } from "react-icons/fa"
 import ApiService from "../services/apiService"
 import useAuthStore from "../store/authStore"
+import RoleBasedComponent from "../components/common/RoleBasedComponent"
+import AttendanceWidget from "../components/common/AttendanceWidget"
 
 const MotionBox = motion(Box)
 
 const EmployeesPage = () => {
+    const { user } = useAuthStore()
+    const showAttendance = ["Manager", "Employee"].includes(user?.role)
     const [searchTerm, setSearchTerm] = useState("")
     const [filterDepartment, setFilterDepartment] = useState("")
     const [filterStatus, setFilterStatus] = useState("")
@@ -84,7 +88,6 @@ const EmployeesPage = () => {
     const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
 
     const toast = useToast()
-    const { user } = useAuthStore()
 
     const cardBg = useColorModeValue("white", "gray.800")
     const borderColor = useColorModeValue("gray.200", "gray.600")
@@ -235,6 +238,11 @@ const EmployeesPage = () => {
 
     return (
         <Container maxW="7xl" py={8}>
+            {showAttendance && (
+                <RoleBasedComponent allowedRoles={["Manager", "Employee"]}>
+                    <AttendanceWidget />
+                </RoleBasedComponent>
+            )}
             <MotionBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 {/* Header */}
                 <VStack spacing={6} mb={8}>

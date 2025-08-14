@@ -41,7 +41,12 @@ class ApiService {
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}))
-                throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}`)
+                const err = new Error(errorData.detail || errorData.message || `HTTP ${response.status}`)
+                // Attach useful metadata so callers can make decisions based on backend payload
+                err.status = response.status
+                err.data = errorData
+                err.url = url
+                throw err
             }
 
             return await response.json()

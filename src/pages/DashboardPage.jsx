@@ -33,6 +33,7 @@ import {
 import { FaUsers, FaUserMinus, FaInbox, FaUserPlus } from "react-icons/fa"
 import useAuthStore from "../store/authStore"
 import RoleBasedComponent from "../components/common/RoleBasedComponent"
+import AttendanceWidget from "../components/common/AttendanceWidget"
 import { useEffect, useState } from "react"
 import ApiService from "../services/apiService"
 
@@ -408,6 +409,11 @@ const DashboardPage = () => {
     return (
         <>
             <Container maxW="7xl" p={{ base: 4, sm: 8 }}>
+                {["Manager", "Employee"].includes(user?.role) && (
+                    <RoleBasedComponent allowedRoles={["Manager", "Employee"]}>
+                        <AttendanceWidget />
+                    </RoleBasedComponent>
+                )}
                 {/* Profile Completeness */}
                 {user?.role === "Employee" && (
                     <Box mb={6} p={4} bg={useColorModeValue("white", "gray.800")} borderRadius="xl" shadow="md">

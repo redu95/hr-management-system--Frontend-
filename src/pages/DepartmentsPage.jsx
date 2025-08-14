@@ -53,12 +53,16 @@ import { motion } from "framer-motion"
 import { FaBuilding, FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaUsers, FaArrowUp, FaArrowDown } from "react-icons/fa"
 import ApiService from "../services/apiService"
 import useAuthStore from "../store/authStore"
+import RoleBasedComponent from "../components/common/RoleBasedComponent"
+import AttendanceWidget from "../components/common/AttendanceWidget"
 import { useDepartments, useEmployees, useManagers } from '../hooks/useDirectoryData'
 
 const MotionBox = motion(Box)
 
 const DepartmentsPage = () => {
     const { user } = useAuthStore()
+    // Show attendance widget for Managers and Employees
+    const showAttendance = ["Manager", "Employee"].includes(user?.role)
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedDepartment, setSelectedDepartment] = useState(null)
     const [formData, setFormData] = useState({
@@ -213,6 +217,11 @@ const DepartmentsPage = () => {
 
     return (
         <Container maxW="7xl" py={8}>
+            {showAttendance && (
+                <RoleBasedComponent allowedRoles={["Manager", "Employee"]}>
+                    <AttendanceWidget />
+                </RoleBasedComponent>
+            )}
             <MotionBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 {/* Header */}
                 <VStack spacing={6} mb={8}>
