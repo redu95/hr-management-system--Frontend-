@@ -180,6 +180,14 @@ class ApiService {
         return this.apiCall(`/api/users/${qs ? `?${qs}` : ""}`)
     }
 
+    // Fetch managers only
+    getManagers = async () => {
+        const data = await this.searchUsers({ role: 'manager' })
+        if (Array.isArray(data)) return data
+        if (data?.results) return data.results
+        return []
+    }
+
     getUser = async (id) => {
         return this.apiCall(`/api/users/${id}/`)
     }
@@ -195,6 +203,21 @@ class ApiService {
         return this.apiCall(`/api/users/${id}/`, {
             method: "PUT",
             body: JSON.stringify(data),
+        })
+    }
+
+    // Promote / Demote user role (CEO/HR only backend enforced)
+    promoteUser = async (id) => {
+        return this.apiCall(`/api/users/${id}/promote/`, {
+            method: 'POST',
+            body: JSON.stringify({}),
+        })
+    }
+
+    demoteUser = async (id) => {
+        return this.apiCall(`/api/users/${id}/demote/`, {
+            method: 'POST',
+            body: JSON.stringify({}),
         })
     }
 

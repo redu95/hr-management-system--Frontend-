@@ -50,15 +50,15 @@ import {
     StatHelpText,
 } from "@chakra-ui/react"
 import { motion } from "framer-motion"
-import { FaBuilding, FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaUsers } from "react-icons/fa"
+import { FaBuilding, FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaUsers, FaArrowUp, FaArrowDown } from "react-icons/fa"
 import ApiService from "../services/apiService"
+import useAuthStore from "../store/authStore"
+import { useDepartments, useEmployees, useManagers } from '../hooks/useDirectoryData'
 
 const MotionBox = motion(Box)
 
 const DepartmentsPage = () => {
-    const [departments, setDepartments] = useState([])
-    const [employees, setEmployees] = useState([])
-    const [loading, setLoading] = useState(true)
+    const { user } = useAuthStore()
     const [searchTerm, setSearchTerm] = useState("")
     const [selectedDepartment, setSelectedDepartment] = useState(null)
     const [formData, setFormData] = useState({
@@ -68,6 +68,11 @@ const DepartmentsPage = () => {
         manager: "",
     })
 
+    const { data: departments = [], isLoading: loadingDepartments } = useDepartments()
+    const { data: employees = [], refetch: refetchEmployees } = useEmployees()
+    const { data: managers = [], refetch: refetchManagers } = useManagers()
+    const loading = loadingDepartments
+
     const { isOpen: isAddOpen, onOpen: onAddOpen, onClose: onAddClose } = useDisclosure()
     const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure()
     const { isOpen: isViewOpen, onOpen: onViewOpen, onClose: onViewClose } = useDisclosure()
@@ -75,40 +80,6 @@ const DepartmentsPage = () => {
 
     const toast = useToast()
     const cardBg = useColorModeValue("white", "gray.800")
-
-    const fetchDepartments = async () => {
-        try {
-            setLoading(true)
-            const data = await ApiService.getDepartments()
-            setDepartments(Array.isArray(data) ? data : data.results || [])
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to fetch departments.",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-            })
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const fetchEmployees = async () => {
-        try {
-            // Use ApiService.getEmployees which fetches users with role Employee
-            const data = await ApiService.getEmployees()
-            setEmployees(Array.isArray(data) ? data : data.results || [])
-            console.log("Fetched employees:", data)
-        } catch (error) {
-            console.error("Failed to fetch employees:", error)
-        }
-    }
-
-    useEffect(() => {
-        fetchDepartments()
-        fetchEmployees()
-    }, [])
 
     const filteredDepartments = departments.filter(
         (department) =>
@@ -154,8 +125,9 @@ const DepartmentsPage = () => {
                 onAddClose()
             }
 
-            fetchDepartments()
-            resetForm()
+            // Invalidate cached queries by refetching after mutation
+            refetchEmployees();
+            refetchManagers();
         } catch (error) {
             toast({
                 title: "Error",
@@ -176,7 +148,8 @@ const DepartmentsPage = () => {
                 status: "success",
             })
             onDeleteClose()
-            fetchDepartments()
+            refetchEmployees();
+            refetchManagers();
         } catch (error) {
             toast({
                 title: "Error",
@@ -368,9 +341,9 @@ const DepartmentsPage = () => {
                                                     <Td>
                                                         <HStack spacing={2}>
                                                             <FaUsers color="gray" size="14" />
-                                                            <Text>{stats.totalEmployees}</Text>
+                                                            <Text>{typeof department.head_count === 'number' ? department.head_count : stats.totalEmployees}</Text>
                                                             <Text fontSize="sm" color="gray.500">
-                                                                ({stats.activeEmployees} active)
+                                                                {/* ({stats.activeEmployees} active) */}
                                                             </Text>
                                                         </HStack>
                                                     </Td>
@@ -450,9 +423,9 @@ const DepartmentsPage = () => {
                                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
                                     placeholder="Select a manager"
                                 >
-                                    {employees.map((employee) => (
-                                        <option key={employee.id} value={String(employee.id)}>
-                                            {employee.first_name} {employee.last_name} - {employee.job_title}
+                                    {managers.map((m) => (
+                                        <option key={m.id} value={String(m.id)}>
+                                            {m.first_name} {m.last_name} {m.job_title ? `- ${m.job_title}` : ''}
                                         </option>
                                     ))}
                                 </Select>
@@ -506,9 +479,9 @@ const DepartmentsPage = () => {
                                     onChange={(e) => setFormData({ ...formData, manager: e.target.value })}
                                     placeholder="Select a manager"
                                 >
-                                    {employees.map((employee) => (
-                                        <option key={employee.id} value={String(employee.id)}>
-                                            {employee.first_name} {employee.last_name} - {employee.job_title}
+                                    {managers.map((m) => (
+                                        <option key={m.id} value={String(m.id)}>
+                                            {m.first_name} {m.last_name} {m.job_title ? `- ${m.job_title}` : ''}
                                         </option>
                                     ))}
                                 </Select>
@@ -651,6 +624,27 @@ const DepartmentsPage = () => {
                                                     <Badge colorScheme={employee.is_active ? "green" : "red"} size="sm">
                                                         {employee.is_active ? "Active" : "Inactive"}
                                                     </Badge>
+                                                    {(user?.role === 'CEO' || user?.role === 'HR') && (
+                                                        <HStack>
+                                                            {(employee.role || '').toLowerCase() === 'manager' ? (
+                                                                <Button size="xs" leftIcon={<FaArrowDown />} colorScheme="orange" variant="outline" onClick={async () => {
+                                                                    try {
+                                                                        await ApiService.demoteUser(employee.id)
+                                                                        toast({ title: 'Demoted to Employee', status: 'success', duration: 2000 })
+                                                                        refetchEmployees(); refetchManagers();
+                                                                    } catch (e) { toast({ title: 'Demotion failed', description: e.message, status: 'error' }) }
+                                                                }}>Demote</Button>
+                                                            ) : (
+                                                                <Button size="xs" leftIcon={<FaArrowUp />} colorScheme="blue" variant="outline" onClick={async () => {
+                                                                    try {
+                                                                        await ApiService.promoteUser(employee.id)
+                                                                        toast({ title: 'Promoted to Manager', status: 'success', duration: 2000 })
+                                                                        refetchEmployees(); refetchManagers();
+                                                                    } catch (e) { toast({ title: 'Promotion failed', description: e.message, status: 'error' }) }
+                                                                }}>Promote</Button>
+                                                            )}
+                                                        </HStack>
+                                                    )}
                                                 </HStack>
                                             ))}
                                         {employees.filter((emp) => emp.department === selectedDepartment.id).length > 5 && (

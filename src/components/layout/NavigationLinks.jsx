@@ -14,17 +14,19 @@ import {
 } from "react-icons/fa"
 import useAuthStore from "../../store/authStore"
 import RoleBasedComponent from "../common/RoleBasedComponent"
+import { usePrefetchDirectory } from '../../hooks/useDirectoryData'
 
 const NavigationLinks = ({ onLinkClick }) => {
     const { user } = useAuthStore()
+    const prefetchDirectory = usePrefetchDirectory()
 
     const activeBg = useColorModeValue("blue.50", "blue.900")
     const activeColor = useColorModeValue("blue.700", "blue.200")
     const hoverBg = useColorModeValue("gray.100", "gray.700")
     const textColor = useColorModeValue("gray.700", "gray.100")
 
-    const NavItem = ({ to, icon: Icon, children, onClick }) => (
-        <NavLink to={to} onClick={onClick}>
+    const NavItem = ({ to, icon: Icon, children, onClick, prefetch }) => (
+        <NavLink to={to} onClick={onClick} onMouseEnter={prefetch} onFocus={prefetch}>
             {({ isActive }) => (
                 <HStack
                     w="full"

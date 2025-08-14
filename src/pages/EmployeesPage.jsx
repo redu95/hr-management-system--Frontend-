@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useEmployees, useDepartments } from '../hooks/useDirectoryData'
 import {
     Box,
     Button,
@@ -58,9 +59,6 @@ import useAuthStore from "../store/authStore"
 const MotionBox = motion(Box)
 
 const EmployeesPage = () => {
-    const [employees, setEmployees] = useState([])
-    const [departments, setDepartments] = useState([])
-    const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState("")
     const [filterDepartment, setFilterDepartment] = useState("")
     const [filterStatus, setFilterStatus] = useState("")
@@ -76,6 +74,10 @@ const EmployeesPage = () => {
         is_active: true,
     })
 
+    const { data: employees = [], isLoading: loadingEmployees, refetch: refetchEmployees } = useEmployees()
+    const { data: departments = [] } = useDepartments()
+    const loading = loadingEmployees
+
     const { isOpen: isAddOpen, onOpen: onAddOpen, onClose: onAddClose } = useDisclosure()
     const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure()
     const { isOpen: isViewOpen, onOpen: onViewOpen, onClose: onViewClose } = useDisclosure()
@@ -87,52 +89,20 @@ const EmployeesPage = () => {
     const cardBg = useColorModeValue("white", "gray.800")
     const borderColor = useColorModeValue("gray.200", "gray.600")
 
-    // Fetch data
-    const fetchEmployees = async () => {
-        try {
-            setLoading(true)
-            // Use ApiService.getEmployees which fetches users with role Employee
-            const data = await ApiService.getEmployees()
-            setEmployees(Array.isArray(data) ? data : data.results || [])
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: "Failed to fetch employees",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-            })
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const fetchDepartments = async () => {
-        try {
-            // Optionally, if you want department managers, you may want all users here
-            const data = await ApiService.getDepartments()
-            setDepartments(Array.isArray(data) ? data : data.results || [])
-        } catch (error) {
-            console.error("Failed to fetch departments:", error)
-        }
-    }
-
-    useEffect(() => {
-        fetchEmployees()
-        fetchDepartments()
-    }, [])
-
     // Filter employees
     const filteredEmployees = employees.filter((employee) => {
+        const term = searchTerm.toLowerCase()
         const matchesSearch =
-            employee.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            employee.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            employee.job_title?.toLowerCase().includes(searchTerm.toLowerCase())
-            employee.department?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+            employee.first_name?.toLowerCase().includes(term) ||
+            employee.last_name?.toLowerCase().includes(term) ||
+            employee.email?.toLowerCase().includes(term) ||
+            employee.job_title?.toLowerCase().includes(term) ||
+            employee.department?.name?.toLowerCase().includes(term) ||
+            employee.department_details?.name?.toLowerCase().includes(term)
 
-        const matchesDepartment = !filterDepartment || employee.department === Number.parseInt(filterDepartment)
-        const matchesStatus = !filterStatus || employee.is_active.toString() === filterStatus
+        const empDeptId = typeof employee.department === 'object' ? employee.department?.id : employee.department
+        const matchesDepartment = !filterDepartment || empDeptId === Number.parseInt(filterDepartment)
+        const matchesStatus = !filterStatus || employee.is_active?.toString() === filterStatus
 
         return matchesSearch && matchesDepartment && matchesStatus
     })
@@ -167,7 +137,7 @@ const EmployeesPage = () => {
                 onAddClose()
             }
 
-            fetchEmployees()
+            refetchEmployees()
             resetForm()
         } catch (error) {
             toast({
@@ -192,7 +162,7 @@ const EmployeesPage = () => {
                 isClosable: true,
             })
             onDeleteClose()
-            fetchEmployees()
+            refetchEmployees()
         } catch (error) {
             toast({
                 title: "Error",
