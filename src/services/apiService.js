@@ -281,6 +281,24 @@ class ApiService {
             throw error
         }
     }
+
+    // Attendance: monthly summary
+    getMonthlyAttendance = async (params = {}) => {
+        // params: { month, year, employee, user, department, ... }
+        const query = new URLSearchParams()
+        const now = new Date()
+        const month = params.month ?? now.getMonth() + 1
+        const year = params.year ?? now.getFullYear()
+        query.append("month", month)
+        query.append("year", year)
+        // append any other provided filters (employee/user/department)
+        Object.entries(params).forEach(([k, v]) => {
+            if (["month", "year"].includes(k)) return
+            if (v !== undefined && v !== null && v !== "") query.append(k, v)
+        })
+        const qs = query.toString()
+        return this.apiCall(`/api/attendance/monthly-summary/${qs ? `?${qs}` : ""}`)
+    }
 }
 
 export default new ApiService()

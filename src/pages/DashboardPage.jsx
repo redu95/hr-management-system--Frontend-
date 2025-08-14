@@ -34,6 +34,7 @@ import { FaUsers, FaUserMinus, FaInbox, FaUserPlus } from "react-icons/fa"
 import useAuthStore from "../store/authStore"
 import RoleBasedComponent from "../components/common/RoleBasedComponent"
 import AttendanceWidget from "../components/common/AttendanceWidget"
+import MonthlyAttendance from "../components/common/MonthlyAttendance"
 import { useEffect, useState } from "react"
 import ApiService from "../services/apiService"
 
@@ -410,9 +411,16 @@ const DashboardPage = () => {
         <>
             <Container maxW="7xl" p={{ base: 4, sm: 8 }}>
                 {["Manager", "Employee"].includes(user?.role) && (
-                    <RoleBasedComponent allowedRoles={["Manager", "Employee"]}>
-                        <AttendanceWidget />
-                    </RoleBasedComponent>
+                    <>
+                        <RoleBasedComponent allowedRoles={["Manager", "Employee"]}>
+                            <AttendanceWidget />
+                        </RoleBasedComponent>
+                        <Box mt={4}>
+                            <RoleBasedComponent allowedRoles={["Manager", "Employee"]}>
+                                <MonthlyAttendance title="My Monthly Attendance" compact />
+                            </RoleBasedComponent>
+                        </Box>
+                    </>
                 )}
                 {/* Profile Completeness */}
                 {user?.role === "Employee" && (

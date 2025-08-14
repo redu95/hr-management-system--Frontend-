@@ -55,6 +55,7 @@ import ApiService from "../services/apiService"
 import useAuthStore from "../store/authStore"
 import RoleBasedComponent from "../components/common/RoleBasedComponent"
 import AttendanceWidget from "../components/common/AttendanceWidget"
+import MonthlyAttendance from "../components/common/MonthlyAttendance"
 import { useDepartments, useEmployees, useManagers } from '../hooks/useDirectoryData'
 
 const MotionBox = motion(Box)
@@ -668,6 +669,18 @@ const DepartmentsPage = () => {
                                         )}
                                     </VStack>
                                 </Box>
+
+                                {/* Manager Attendance Overview for CEO/HR */}
+                                {(selectedDepartment?.manager?.id) && (
+                                    <RoleBasedComponent allowedRoles={["CEO", "HR"]}>
+                                        <Box>
+                                            <Text fontWeight="semibold" color="gray.600" fontSize="sm" mb={3}>
+                                                MANAGER ATTENDANCE
+                                            </Text>
+                                            <MonthlyAttendance title={`Manager Monthly Attendance`} employeeId={selectedDepartment.manager.id} compact />
+                                        </Box>
+                                    </RoleBasedComponent>
+                                )}
                             </VStack>
                         )}
                     </ModalBody>

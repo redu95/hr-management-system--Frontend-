@@ -57,6 +57,7 @@ import ApiService from "../services/apiService"
 import useAuthStore from "../store/authStore"
 import RoleBasedComponent from "../components/common/RoleBasedComponent"
 import AttendanceWidget from "../components/common/AttendanceWidget"
+import MonthlyAttendance from "../components/common/MonthlyAttendance"
 
 const MotionBox = motion(Box)
 
@@ -678,6 +679,15 @@ const EmployeesPage = () => {
                                         <Text>#{selectedEmployee.id}</Text>
                                     </Box>
                                 </Grid>
+
+                                {/* Attendance for this employee - visible to CEO/HR and also Manager (for their team) */}
+                                <RoleBasedComponent allowedRoles={["CEO", "HR", "Manager"]}
+                                    fallback={null}
+                                >
+                                    <Box mt={2}>
+                                        <MonthlyAttendance title={`Attendance - ${selectedEmployee.first_name} ${selectedEmployee.last_name}`} employeeId={selectedEmployee.id} />
+                                    </Box>
+                                </RoleBasedComponent>
                             </VStack>
                         )}
                     </ModalBody>
