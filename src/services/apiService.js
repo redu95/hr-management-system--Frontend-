@@ -134,6 +134,25 @@ class ApiService {
         })
     }
 
+    // System settings endpoints (used for things like annual leave caps)
+    getSystemSettings = async () => {
+        return this.apiCall("/api/settings/system/")
+    }
+
+    createSystemSetting = async (data) => {
+        return this.apiCall("/api/settings/system/", {
+            method: "POST",
+            body: JSON.stringify(data),
+        })
+    }
+
+    updateSystemSetting = async (id, data) => {
+        return this.apiCall(`/api/settings/system/${id}/`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        })
+    }
+
     // Leave Request endpoints
     getLeaveRequests = async () => {
         // Get all leave requests for CEO/HR/Manager, or only own for Employee

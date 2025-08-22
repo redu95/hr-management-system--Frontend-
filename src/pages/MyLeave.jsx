@@ -119,6 +119,9 @@ const MyLeave = () => {
 
     // State for employees
     const [employees, setEmployees] = useState([])
+    const [systemAnnualCap, setSystemAnnualCap] = useState(null)
+    const [userYearlyGranted, setUserYearlyGranted] = useState(null)
+    const [userYearlyRemaining, setUserYearlyRemaining] = useState(null)
     const [searchTerm, setSearchTerm] = useState("")
     const [filterStatus, setFilterStatus] = useState("")
     const [selectedRequest, setSelectedRequest] = useState(null)
@@ -128,6 +131,26 @@ const MyLeave = () => {
         queryKey: ["leaveRequests"],
         queryFn: ApiService.getLeaveRequests,
     })
+
+    // If backend returns system_annual_request_limit or per-request fields, extract them
+    useEffect(() => {
+        // The backend may return meta/system fields on the list response
+        // e.g. leaveRequests.system_annual_request_limit or per-request yearly_* fields
+        if (!leaveRequests) return
+        try {
+            if (leaveRequests.system_annual_request_limit !== undefined) {
+                setSystemAnnualCap(leaveRequests.system_annual_request_limit)
+            }
+            // If the API returns aggregated fields for the current user, pick from first result
+            const first = (leaveRequests.results && leaveRequests.results[0]) || (Array.isArray(leaveRequests) && leaveRequests[0])
+            if (first) {
+                if (first.yearly_granted_days !== undefined) setUserYearlyGranted(first.yearly_granted_days)
+                if (first.yearly_remaining_days !== undefined) setUserYearlyRemaining(first.yearly_remaining_days)
+            }
+        } catch (e) {
+            // ignore
+        }
+    }, [leaveRequests])
 
     // Fetch employees
     const { data: fetchedEmployees } = useQuery({
@@ -233,6 +256,14 @@ const MyLeave = () => {
     const handleRequestLeave = () => {
         // Do not send employee field, backend assigns it
         const { start_date, end_date, reason } = leaveRequestForm
+        // client-side precheck: compute requested days and compare to yearly_remaining_days if available
+        const requestedDays = calculateDays(start_date, end_date)
+        if (userYearlyRemaining !== null && userYearlyRemaining !== undefined) {
+            if (requestedDays > userYearlyRemaining) {
+                chakraToast({ title: 'Exceeds Remaining Days', description: `You are requesting ${requestedDays} days but only ${userYearlyRemaining} days remain. The server will still validate this.`, status: 'warning', duration: 6000, isClosable: true })
+                // Allow submission but warn the user — do not block completely
+            }
+        }
         createLeaveRequestMutation.mutate({ start_date, end_date, reason })
     }
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
     Box,
     Button,
@@ -15,6 +15,11 @@ import {
     FormControl,
     FormLabel,
     Input,
+    NumberInput,
+    NumberInputField,
+    NumberInputStepper,
+    NumberIncrementStepper,
+    NumberDecrementStepper,
     InputGroup,
     InputRightElement,
     IconButton,
@@ -29,6 +34,8 @@ import {
 } from "@chakra-ui/react"
 import { motion } from "framer-motion"
 import { FaCog, FaEye, FaEyeSlash, FaCheck } from "react-icons/fa"
+import ApiService from "../services/apiService"
+import useAuthStore from "../store/authStore"
 
 const MotionBox = motion(Box)
 
@@ -86,6 +93,64 @@ const SettingsPage = () => {
             duration: 3000,
             isClosable: true,
         })
+    }
+
+    // Annual Leave Settings
+    const { user } = useAuthStore()
+    // Backend permission: only users with role 'ceo' can manage system settings.
+    const isAdminForSettings = (user?.role || "").toLowerCase() === "ceo"
+    // Start empty so the UI doesn't show 0 before settings are loaded
+    const [annualMaxDays, setAnnualMaxDays] = useState("")
+    const [settingsLoaded, setSettingsLoaded] = useState(false)
+    const [settingId, setSettingId] = useState(null)
+    const [isSaving, setIsSaving] = useState(false)
+
+    // Load system settings on mount
+    useEffect(() => {
+        const load = async () => {
+            try {
+                const settings = await ApiService.getSystemSettings()
+                // settings may be an array with objects { key, int_value, id }
+                const found = (Array.isArray(settings) ? settings : settings.results || []).find(s => s.key === 'annual_leave_request_max_days')
+                if (found) {
+                    setAnnualMaxDays(found.int_value ?? 0)
+                    setSettingId(found.id)
+                } else {
+                    // keep empty to indicate not set
+                    setAnnualMaxDays("")
+                    setSettingId(null)
+                }
+            } catch (e) {
+                // ignore
+            } finally {
+                setSettingsLoaded(true)
+            }
+        }
+        if (isAdminForSettings) load()
+    }, [isAdminForSettings])
+
+    const handleSaveAnnualMax = async () => {
+        setIsSaving(true)
+        try {
+            // If we already discovered the id when loading, PATCH directly
+            if (settingId) {
+                const updated = await ApiService.updateSystemSetting(settingId, { int_value: Number(annualMaxDays) })
+                setAnnualMaxDays(updated.int_value ?? updated.int_value === 0 ? updated.int_value : annualMaxDays)
+                toast({ title: 'Saved', description: 'Annual leave cap updated', status: 'success', duration: 3000 })
+            } else {
+                // Create and capture the returned id
+                const created = await ApiService.createSystemSetting({ key: 'annual_leave_request_max_days', int_value: Number(annualMaxDays), description: 'Annual cap (days)' })
+                setSettingId(created.id)
+                setAnnualMaxDays(created.int_value ?? created.int_value === 0 ? created.int_value : annualMaxDays)
+                toast({ title: 'Created', description: 'Annual leave cap created', status: 'success', duration: 3000 })
+            }
+        } catch (e) {
+            console.error('Failed saving system setting', e)
+            toast({ title: 'Error', description: e?.message || 'Failed to save', status: 'error', duration: 4000 })
+        } finally {
+            setIsSaving(false)
+            setSettingsLoaded(true)
+        }
     }
 
     return (
@@ -278,6 +343,33 @@ const SettingsPage = () => {
                                     <Button leftIcon={<FaCheck />} colorScheme="blue" mt={6} onClick={handleSaveCompanyInfo}>
                                         Save Company Info
                                     </Button>
+
+                                    {/* System-level annual leave cap (Admins only) */}
+                                    {isAdminForSettings && (
+                                        <Box mt={6}>
+                                            <Heading size="sm" mb={3} color={headingColor}>
+                                                System Settings
+                                            </Heading>
+                                            <FormControl maxW="xs">
+                                                <FormLabel>Annual Leave Cap (days)</FormLabel>
+                                                <NumberInput
+                                                    min={0}
+                                                    value={settingsLoaded && annualMaxDays !== "" ? annualMaxDays : undefined}
+                                                    onChange={(str, num) => setAnnualMaxDays(num)}
+                                                    isDisabled={!settingsLoaded}
+                                                >
+                                                    <NumberInputField placeholder={settingsLoaded ? "" : "Loading..."} />
+                                                    <NumberInputStepper>
+                                                        <NumberIncrementStepper />
+                                                        <NumberDecrementStepper />
+                                                    </NumberInputStepper>
+                                                </NumberInput>
+                                            </FormControl>
+                                            <Button mt={4} colorScheme="blue" onClick={handleSaveAnnualMax} isLoading={!settingsLoaded}>
+                                                Save Annual Leave Cap
+                                            </Button>
+                                        </Box>
+                                    )}
                                 </TabPanel>
                             </TabPanels>
                         </Tabs>
