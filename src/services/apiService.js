@@ -153,6 +153,26 @@ class ApiService {
         })
     }
 
+    // System settings by-key convenience endpoints
+    getSystemSettingByKey = async (key) => {
+        return this.apiCall(`/api/settings/system/by-key/${encodeURIComponent(key)}/`)
+    }
+
+    createSystemSettingByKey = async (key, data) => {
+        // data should include value fields (e.g., { int_value, description })
+        return this.apiCall(`/api/settings/system/by-key/${encodeURIComponent(key)}/`, {
+            method: "POST",
+            body: JSON.stringify(data),
+        })
+    }
+
+    updateSystemSettingByKey = async (key, data) => {
+        return this.apiCall(`/api/settings/system/by-key/${encodeURIComponent(key)}/`, {
+            method: "PATCH",
+            body: JSON.stringify(data),
+        })
+    }
+
     // Leave Request endpoints
     getLeaveRequests = async () => {
         // Get all leave requests for CEO/HR/Manager, or only own for Employee

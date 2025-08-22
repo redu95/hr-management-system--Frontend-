@@ -102,24 +102,44 @@ const SettingsPage = () => {
     // Start empty so the UI doesn't show 0 before settings are loaded
     const [annualMaxDays, setAnnualMaxDays] = useState("")
     const [settingsLoaded, setSettingsLoaded] = useState(false)
-    const [settingId, setSettingId] = useState(null)
     const [isSaving, setIsSaving] = useState(false)
+    // Full settings list UI (allowed keys)
+    const allowedSettings = [
+        { key: 'annual_leave_request_max_days', label: 'Annual Leave Cap (days)', type: 'int' },
+        // Add more allowed keys here as backend allows them
+    ]
+    const [settingsMap, setSettingsMap] = useState({})
+    const [inputs, setInputs] = useState({})
+    const [listLoading, setListLoading] = useState(false)
+    const [savingMap, setSavingMap] = useState({})
 
     // Load system settings on mount
     useEffect(() => {
         const load = async () => {
             try {
-                const settings = await ApiService.getSystemSettings()
-                // settings may be an array with objects { key, int_value, id }
-                const found = (Array.isArray(settings) ? settings : settings.results || []).find(s => s.key === 'annual_leave_request_max_days')
-                if (found) {
-                    setAnnualMaxDays(found.int_value ?? 0)
-                    setSettingId(found.id)
+                // Load the single key for the top-level quick input
+                const found = await ApiService.getSystemSettingByKey('annual_leave_request_max_days')
+                if (found && (found.int_value ?? found.int_value === 0)) {
+                    setAnnualMaxDays(found.int_value)
                 } else {
-                    // keep empty to indicate not set
                     setAnnualMaxDays("")
-                    setSettingId(null)
                 }
+
+                // Also load full settings list so we can render all allowed keys
+                setListLoading(true)
+                const list = await ApiService.getSystemSettings()
+                const results = Array.isArray(list) ? list : list.results || []
+                const map = {}
+                results.forEach(item => { map[item.key] = item })
+                setSettingsMap(map)
+                // populate inputs from map for allowed keys
+                const newInputs = {}
+                allowedSettings.forEach(s => {
+                    const existing = map[s.key]
+                    newInputs[s.key] = existing ? (existing.int_value ?? '') : ''
+                })
+                setInputs(newInputs)
+                setListLoading(false)
             } catch (e) {
                 // ignore
             } finally {
@@ -132,17 +152,31 @@ const SettingsPage = () => {
     const handleSaveAnnualMax = async () => {
         setIsSaving(true)
         try {
-            // If we already discovered the id when loading, PATCH directly
-            if (settingId) {
-                const updated = await ApiService.updateSystemSetting(settingId, { int_value: Number(annualMaxDays) })
-                setAnnualMaxDays(updated.int_value ?? updated.int_value === 0 ? updated.int_value : annualMaxDays)
+            const valueNum = Number(annualMaxDays)
+            // Prefer PATCH by key; if 404, then POST by key; if POST 400 (exists), fallback to PATCH
+            try {
+                const updated = await ApiService.updateSystemSettingByKey('annual_leave_request_max_days', { int_value: valueNum })
+                setAnnualMaxDays(updated.int_value ?? valueNum)
                 toast({ title: 'Saved', description: 'Annual leave cap updated', status: 'success', duration: 3000 })
-            } else {
-                // Create and capture the returned id
-                const created = await ApiService.createSystemSetting({ key: 'annual_leave_request_max_days', int_value: Number(annualMaxDays), description: 'Annual cap (days)' })
-                setSettingId(created.id)
-                setAnnualMaxDays(created.int_value ?? created.int_value === 0 ? created.int_value : annualMaxDays)
-                toast({ title: 'Created', description: 'Annual leave cap created', status: 'success', duration: 3000 })
+            } catch (err) {
+                if (err?.status === 404) {
+                    try {
+                        const created = await ApiService.createSystemSettingByKey('annual_leave_request_max_days', { int_value: valueNum, description: 'Annual cap (days)' })
+                        setAnnualMaxDays(created.int_value ?? valueNum)
+                        toast({ title: 'Created', description: 'Annual leave cap created', status: 'success', duration: 3000 })
+                    } catch (e2) {
+                        // If backend returns 400 with existing setting, attempt PATCH again
+                        if (e2?.status === 400 && e2?.data?.setting) {
+                            const patched = await ApiService.updateSystemSettingByKey('annual_leave_request_max_days', { int_value: valueNum })
+                            setAnnualMaxDays(patched.int_value ?? valueNum)
+                            toast({ title: 'Saved', description: 'Annual leave cap updated', status: 'success', duration: 3000 })
+                        } else {
+                            throw e2
+                        }
+                    }
+                } else {
+                    throw err
+                }
             }
         } catch (e) {
             console.error('Failed saving system setting', e)
@@ -150,6 +184,38 @@ const SettingsPage = () => {
         } finally {
             setIsSaving(false)
             setSettingsLoaded(true)
+        }
+    }
+
+    // Per-key save handler for the settings list
+    const handleSaveKey = async (key) => {
+        const raw = inputs[key]
+        const num = Number(raw)
+        setSavingMap(m => ({ ...m, [key]: true }))
+        try {
+            try {
+                const updated = await ApiService.updateSystemSettingByKey(key, { int_value: num })
+                setSettingsMap(m => ({ ...m, [key]: updated }))
+                toast({ title: 'Saved', description: `${key} updated`, status: 'success', duration: 3000 })
+            } catch (err) {
+                if (err?.status === 404) {
+                    const created = await ApiService.createSystemSettingByKey(key, { int_value: num, description: `${key}` })
+                    setSettingsMap(m => ({ ...m, [key]: created }))
+                    toast({ title: 'Created', description: `${key} created`, status: 'success', duration: 3000 })
+                } else if (err?.status === 400 && err?.data?.setting) {
+                    // backend says exists; patch it
+                    const patched = await ApiService.updateSystemSettingByKey(key, { int_value: num })
+                    setSettingsMap(m => ({ ...m, [key]: patched }))
+                    toast({ title: 'Saved', description: `${key} updated`, status: 'success', duration: 3000 })
+                } else {
+                    throw err
+                }
+            }
+        } catch (e) {
+            console.error('Failed saving key', key, e)
+            toast({ title: 'Error', description: e?.message || `Failed to save ${key}`, status: 'error', duration: 4000 })
+        } finally {
+            setSavingMap(m => ({ ...m, [key]: false }))
         }
     }
 
@@ -350,24 +416,28 @@ const SettingsPage = () => {
                                             <Heading size="sm" mb={3} color={headingColor}>
                                                 System Settings
                                             </Heading>
-                                            <FormControl maxW="xs">
-                                                <FormLabel>Annual Leave Cap (days)</FormLabel>
-                                                <NumberInput
-                                                    min={0}
-                                                    value={settingsLoaded && annualMaxDays !== "" ? annualMaxDays : undefined}
-                                                    onChange={(str, num) => setAnnualMaxDays(num)}
-                                                    isDisabled={!settingsLoaded}
-                                                >
-                                                    <NumberInputField placeholder={settingsLoaded ? "" : "Loading..."} />
-                                                    <NumberInputStepper>
-                                                        <NumberIncrementStepper />
-                                                        <NumberDecrementStepper />
-                                                    </NumberInputStepper>
-                                                </NumberInput>
-                                            </FormControl>
-                                            <Button mt={4} colorScheme="blue" onClick={handleSaveAnnualMax} isLoading={!settingsLoaded}>
-                                                Save Annual Leave Cap
-                                            </Button>
+                                            <VStack align="stretch" spacing={4}>
+                                                {/* Quick single-value save remains for backward compatibility */}
+                                                <FormControl maxW="xs">
+                                                    <FormLabel>Annual Leave Cap (days)</FormLabel>
+                                                    <NumberInput
+                                                        min={0}
+                                                        value={settingsLoaded && annualMaxDays !== "" ? annualMaxDays : undefined}
+                                                        onChange={(str, num) => setAnnualMaxDays(num)}
+                                                        isDisabled={!settingsLoaded}
+                                                    >
+                                                        <NumberInputField placeholder={settingsLoaded ? "" : "Loading..."} />
+                                                        <NumberInputStepper>
+                                                            <NumberIncrementStepper />
+                                                            <NumberDecrementStepper />
+                                                        </NumberInputStepper>
+                                                    </NumberInput>
+                                                </FormControl>
+                                                <Button mt={0} colorScheme="blue" onClick={handleSaveAnnualMax} isLoading={isSaving || !settingsLoaded}>
+                                                    Save Annual Leave Cap
+                                                </Button>
+
+                                            </VStack>
                                         </Box>
                                     )}
                                 </TabPanel>
