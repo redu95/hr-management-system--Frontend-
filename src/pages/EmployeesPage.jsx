@@ -269,9 +269,11 @@ const EmployeesPage = () => {
                                     <MenuItem>Export as PDF</MenuItem>
                                 </MenuList>
                             </Menu>
-                            <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={openAddModal}>
-                                Add Employee
-                            </Button>
+                            {user?.role !== "Manager" && (
+                                <Button leftIcon={<FaPlus />} colorScheme="blue" onClick={openAddModal}>
+                                    Add Employee
+                                </Button>
+                            )}
                         </HStack>
                     </HStack>
 
@@ -291,19 +293,21 @@ const EmployeesPage = () => {
                                         />
                                     </InputGroup>
                                 </GridItem>
-                                <GridItem>
-                                    <Select
-                                        placeholder="Filter by Department"
-                                        value={filterDepartment}
-                                        onChange={(e) => setFilterDepartment(e.target.value)}
-                                    >
-                                        {departments.map((dept) => (
-                                            <option key={dept.id} value={dept.id}>
-                                                {dept.name}
-                                            </option>
-                                        ))}
-                                    </Select>
-                                </GridItem>
+                                {user?.role !== "Manager" && (
+                                    <GridItem>
+                                        <Select
+                                            placeholder="Filter by Department"
+                                            value={filterDepartment}
+                                            onChange={(e) => setFilterDepartment(e.target.value)}
+                                        >
+                                            {departments.map((dept) => (
+                                                <option key={dept.id} value={dept.id}>
+                                                    {dept.name}
+                                                </option>
+                                            ))}
+                                        </Select>
+                                    </GridItem>
+                                )}
                                 <GridItem>
                                     <Select
                                         placeholder="Filter by Status"
@@ -383,14 +387,16 @@ const EmployeesPage = () => {
                                                             onClick={() => openViewModal(employee)}
                                                             aria-label="View employee"
                                                         />
-                                                        <IconButton
-                                                            icon={<FaEdit />}
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            colorScheme="orange"
-                                                            onClick={() => openEditModal(employee)}
-                                                            aria-label="Edit employee"
-                                                        />
+                                                        {user?.role !== "Manager" && (
+                                                            <IconButton
+                                                                icon={<FaEdit />}
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                colorScheme="orange"
+                                                                onClick={() => openEditModal(employee)}
+                                                                aria-label="Edit employee"
+                                                            />
+                                                        )}
                                                         <IconButton
                                                             icon={<FaTrash />}
                                                             size="sm"
@@ -616,7 +622,7 @@ const EmployeesPage = () => {
             </Modal>
 
             {/* View Employee Modal */}
-            <Modal isOpen={isViewOpen} onClose={onViewClose} size="lg">
+            <Modal isOpen={isViewOpen} onClose={onViewClose} size="4xl">
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Employee Details</ModalHeader>

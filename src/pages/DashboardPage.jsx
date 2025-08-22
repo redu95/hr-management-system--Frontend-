@@ -407,9 +407,40 @@ const DashboardPage = () => {
     const headcountLabels = departments.map(d => d.name)
     const headcountCounts = departments.map(d => d.head_count ?? 0)
 
+    // Resolve current Manager's department name from /auth/me (or departments list as fallback)
+    const departmentName = role === "manager"
+        ? (
+            currentUser?.department?.name
+            || currentUser?.department_details?.name
+            || (() => {
+                const depId = currentUser?.department
+                const depIdNum = typeof depId === 'string' ? Number.parseInt(depId) : depId
+                const match = Array.isArray(departments) ? departments.find(d => d.id === depIdNum) : null
+                return match?.name
+            })()
+        )
+        : null
+
     return (
         <>
             <Container maxW="7xl" p={{ base: 4, sm: 8 }}>
+                {/* Welcome Message */}
+                <MotionBox mb={8} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                    <Heading size="xl" mb={2}>
+                        Welcome back, {user.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()}!
+                    </Heading>
+                    <Text color="gray.600" _dark={{ color: "gray.300" }}>
+                        {role === "manager" ? (
+                            <>
+                                {"Here's what's happening in "}
+                                <Text as="span" fontWeight="bold">{departmentName || "your"}</Text>
+                                {" Department today."}
+                            </>
+                        ) : (
+                            "Here's what's happening in your organization today."
+                        )}
+                    </Text>
+                </MotionBox>
                 {["Manager", "Employee"].includes(user?.role) && (
                     <>
                         <RoleBasedComponent allowedRoles={["Manager", "Employee"]}>
@@ -466,18 +497,10 @@ const DashboardPage = () => {
                         )}
                     </Box>
                 )}
-                {/* Welcome Message */}
-                <MotionBox mb={8} initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                    <Heading size="xl" mb={2}>
-                        Welcome back, {user.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()}!
-                    </Heading>
-                    <Text color="gray.600" _dark={{ color: "gray.300" }}>
-                        Here's what's happening in your organization today.
-                    </Text>
-                </MotionBox>
+                
 
                 {/* KPI Cards */}
-                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }} gap={6} mb={8}>
+                <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }} gap={6} mt={8} mb={8}>
                     {kpis.map((item, index) => (
                         <GridItem key={index}>
                             <KpiCard
