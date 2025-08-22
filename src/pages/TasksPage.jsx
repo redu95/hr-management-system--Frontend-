@@ -1,5 +1,6 @@
 "use client"
 import { useMemo, useState } from 'react'
+import useAuthStore from '../store/authStore'
 import {
     Box,
     Button,
@@ -64,6 +65,7 @@ export default function TasksPage() {
         title: '',
         description: '',
         department: '',
+        assignee: '',
         due_date: '',
         priority: 'medium',
         estimate_hours: '',
@@ -72,6 +74,11 @@ export default function TasksPage() {
     const [departments, setDepartments] = useState([])
     const [deptLoading, setDeptLoading] = useState(false)
     const [deptError, setDeptError] = useState('')
+    const [employeesList, setEmployeesList] = useState([])
+    const [empLoading, setEmpLoading] = useState(false)
+    const [empError, setEmpError] = useState('')
+
+    const { user } = useAuthStore()
 
     useEffect(() => {
         const load = async () => {
@@ -90,6 +97,27 @@ export default function TasksPage() {
         load()
     }, [])
 
+    // If user is Manager, load employees for their department
+    useEffect(() => {
+        const loadEmployees = async () => {
+            if (!user || user.role !== 'Manager') return
+            setEmpLoading(true)
+            setEmpError('')
+            try {
+                // If backend provides department on user, use it; otherwise leave blank
+                const deptId = user.department || ''
+                const data = await ApiService.searchUsers({ role: 'employee', department: deptId })
+                const list = Array.isArray(data) ? data : data?.results || []
+                setEmployeesList(list)
+            } catch (e) {
+                setEmpError(e.message)
+            } finally {
+                setEmpLoading(false)
+            }
+        }
+        loadEmployees()
+    }, [user])
+
     const handleCreate = async () => {
         try {
             const payload = {
@@ -99,6 +127,7 @@ export default function TasksPage() {
                 estimate_hours: form.estimate_hours || undefined,
                 due_date: form.due_date ? new Date(form.due_date).toISOString() : undefined,
                 department: form.department ? Number(form.department) : undefined,
+                ...(form.assignee ? { assignees: [Number(form.assignee)] } : {}),
             }
             await createTask.mutateAsync(payload)
             toast({ title: 'Task created', status: 'success' })
@@ -130,11 +159,20 @@ export default function TasksPage() {
                         <option value="high">High</option>
                         <option value="critical">Critical</option>
                     </Select>
-                    <Select placeholder={deptLoading ? 'Loading departments...' : 'Select department'} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} isInvalid={!!deptError}>
-                        {departments.map((d) => (
-                            <option key={d.id} value={d.id}>{d.name || `Department ${d.id}`}</option>
-                        ))}
-                    </Select>
+                    {/* Role-based selector: Departments for CEO/HR, Employees for Manager */}
+                    {user?.role === 'CEO' || user?.role === 'HR' ? (
+                        <Select placeholder={deptLoading ? 'Loading departments...' : 'Select department'} value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} isInvalid={!!deptError}>
+                            {departments.map((d) => (
+                                <option key={d.id} value={d.id}>{d.name || `Department ${d.id}`}</option>
+                            ))}
+                        </Select>
+                    ) : user?.role === 'Manager' ? (
+                        <Select placeholder={empLoading ? 'Loading employees...' : 'Select employee'} value={form.assignee || ''} onChange={(e) => setForm({ ...form, assignee: e.target.value })} isInvalid={!!empError}>
+                            {employeesList.map((emp) => (
+                                <option key={emp.id} value={emp.id}>{emp.first_name ? `${emp.first_name} ${emp.last_name || ''}`.trim() : emp.username || emp.email || `User ${emp.id}`}</option>
+                            ))}
+                        </Select>
+                    ) : null}
                     <Input type="datetime-local" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
                     <Input placeholder="Estimate (hours)" value={form.estimate_hours} onChange={(e) => setForm({ ...form, estimate_hours: e.target.value })} />
                 </Stack>
@@ -208,14 +246,16 @@ export default function TasksPage() {
                                     <Td>{Array.isArray(t.assignees) ? t.assignees.length : 0}</Td>
                                     <Td isNumeric>
                                         <HStack justify="flex-end" spacing={1}>
-                                            <IconButton aria-label="Mark done" icon={<FaCheck />} size="sm" variant="ghost" onClick={async () => {
+                                            <IconButton aria-label="Mark done" icon={<FaCheck />} size="sm" variant="ghost" onClick={async (e) => {
+                                                e.stopPropagation()
                                                 try { await markDone.mutateAsync(t.id); toast({ title: 'Marked done', status: 'success' }) } catch (e) { toast({ title: 'Failed', description: e.message, status: 'error' }) }
                                             }} isLoading={markDone.isPending} />
-                                            <IconButton aria-label="Delete" icon={<FaTrash />} size="sm" variant="ghost" colorScheme="red" onClick={async () => {
+                                            <IconButton aria-label="Delete" icon={<FaTrash />} size="sm" variant="ghost" colorScheme="red" onClick={async (e) => {
+                                                e.stopPropagation()
                                                 try { await delTask.mutateAsync(t.id); toast({ title: 'Deleted', status: 'success' }) } catch (e) { toast({ title: 'Failed', description: e.message, status: 'error' }) }
                                             }} isLoading={delTask.isPending} />
                                             <Menu>
-                                                <MenuButton as={IconButton} aria-label="More" icon={<FaEllipsisV />} size="sm" variant="ghost" />
+                                                <MenuButton as={IconButton} aria-label="More" icon={<FaEllipsisV />} size="sm" variant="ghost" onClick={(e) => e.stopPropagation()} />
                                                 <MenuList>
                                                     <MenuItem onClick={() => navigator.clipboard.writeText(String(t.id))}>Copy ID</MenuItem>
                                                     <MenuItem onClick={() => navigator.clipboard.writeText(JSON.stringify(t, null, 2))}>Copy JSON</MenuItem>

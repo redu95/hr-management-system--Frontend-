@@ -9,15 +9,15 @@ export default function UserPicker({ onSelect, placeholder = 'Search users by na
     const [items, setItems] = useState([])
     const [error, setError] = useState('')
 
-        const fetchUsers = async (query) => {
+    const fetchUsers = async (query) => {
         setLoading(true)
         setError('')
         try {
-                const params = {}
-                if (query) params.search = query
-                if (departmentId) params.department = departmentId
-                if (role) params.role = role
-                const data = await ApiService.searchUsers(params)
+            const params = {}
+            if (query) params.search = query
+            if (departmentId) params.department = departmentId
+            if (role) params.role = role
+            const data = await ApiService.searchUsers(params)
             const results = Array.isArray(data) ? data : data?.results || []
             setItems(results)
         } catch (e) {
@@ -32,7 +32,7 @@ export default function UserPicker({ onSelect, placeholder = 'Search users by na
         return () => clearTimeout(id)
     }, [q])
 
-        useEffect(() => { fetchUsers('') }, [departmentId, role])
+    useEffect(() => { fetchUsers('') }, [departmentId, role])
 
     return (
         <VStack align="stretch" spacing={2}>

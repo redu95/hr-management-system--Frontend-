@@ -123,3 +123,27 @@ export const useDeleteDepartment = () => {
         onSuccess: () => queryClient.invalidateQueries(['departments']),
     });
 };
+
+// Low-level helpers for non-hook usage (e.g., from components that prefer direct calls)
+export const getDepartments = fetchDepartments;
+
+export const getDepartment = async (id) => {
+    const baseUrl = import.meta.env.VITE_BASE_URL;
+    const url = `${baseUrl}/api/departments/${id}/`;
+    const token = getToken();
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(`Failed to fetch department ${id}: ${response.status} - ${JSON.stringify(errorData)}`);
+        }
+        return response.json();
+    } catch (error) {
+        console.error('Error fetching department:', error);
+        throw error;
+    }
+};

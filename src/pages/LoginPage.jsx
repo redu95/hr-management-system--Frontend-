@@ -5,6 +5,9 @@ import { useNavigate, useLocation } from "react-router-dom"
 import {
     Box,
     Button,
+    Alert,
+    AlertIcon,
+    AlertTitle,
     Card,
     CardBody,
     Container,
@@ -40,7 +43,7 @@ const LoginPage = () => {
     const location = useLocation()
     const toast = useToast()
 
-    const { login, isAuthenticated, user } = useAuthStore()
+    const { login, isAuthenticated, user, logout } = useAuthStore()
 
     const bgGradient = useColorModeValue("linear(to-br, blue.50, purple.50)", "linear(to-br, gray.900, purple.900)")
     const cardBg = useColorModeValue("white", "gray.800")
@@ -48,7 +51,7 @@ const LoginPage = () => {
 
     const demoCredentials = [
         { role: "CEO", credential: "t@g.com", password: "1234", color: "purple" },
-        { role: "HR", credential: "manager@example.com", password: "1234", color: "green" },
+        { role: "HR", credential: "hr_manager@example.com", password: "1234", color: "green" },
         { role: "Manager", credential: "manager@example.com", password: "1234", color: "blue" },
         { role: "Employee", credential: "fenanyosef@gmail.com", password: "1234", color: "gray" },
     ]
@@ -109,6 +112,8 @@ const LoginPage = () => {
         }
     }
 
+    const showForceLogoutBanner = Boolean(location.state?.forceLogout)
+
     const handleKeyPress = (e) => {
         if (e.key === "Enter") {
             handleLogin()
@@ -139,7 +144,16 @@ const LoginPage = () => {
             })
     }
 
-    // Redirect if already authenticated
+    // If we reached the login page, force-clear any existing session immediately
+    useEffect(() => {
+        const shouldForce = location.state?.forceLogout !== false
+        if (shouldForce) {
+            try { logout() } catch (_) { }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    // Redirect if already authenticated (but never from the login page itself)
     useEffect(() => {
         console.log("🔍 [LOGIN_PAGE] Checking if should redirect:", {
             isAuthenticated,
@@ -147,7 +161,7 @@ const LoginPage = () => {
             fromPath: location.state?.from?.pathname,
         })
 
-        if (isAuthenticated && user) {
+        if (isAuthenticated && user && location.pathname !== "/login") {
             // Always redirect to dashboard if already authenticated
             console.log("✅ [LOGIN_PAGE] User is authenticated, redirecting to: /dashboard")
             navigate("/dashboard", { replace: true })
@@ -162,7 +176,7 @@ const LoginPage = () => {
     })
 
     // Show loading state while checking authentication
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && location.pathname !== "/login") {
         console.log("🔄 [LOGIN_PAGE] Showing loading state while redirecting")
         return (
             <Box minH="100vh" bgGradient={bgGradient} display="flex" alignItems="center" justifyContent="center">
@@ -178,6 +192,12 @@ const LoginPage = () => {
         <Box minH="100vh" bgGradient={bgGradient} display="flex" alignItems="center" justifyContent="center" p={4}>
             <Container maxW="md">
                 <MotionBox initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+                    {showForceLogoutBanner && (
+                        <Alert status="warning" mb={4} borderRadius="md">
+                            <AlertIcon />
+                            <AlertTitle>Session expired — please sign in again.</AlertTitle>
+                        </Alert>
+                    )}
                     {/* Header Section */}
                     <VStack spacing={6} mb={8} textAlign="center">
                         <MotionBox

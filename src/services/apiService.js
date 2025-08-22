@@ -16,7 +16,15 @@ class ApiService {
 
     // Generic API call method
     apiCall = async (endpoint, options = {}) => {
-        const url = `${this.baseURL}${endpoint}`
+        // Normalize baseURL + endpoint to avoid double slashes
+        const joinUrl = (base, ep) => {
+            if (!base) return ep
+            const b = String(base).replace(/\/+$|\s+$/g, '')
+            const e = String(ep || '')
+            if (e.startsWith('/')) return `${b}${e}`
+            return `${b}/${e.replace(/^\/+/, '')}`
+        }
+        const url = joinUrl(this.baseURL, endpoint)
         const { isFormData = false, headers: extraHeaders, ...rest } = options
         const headers = { ...this.getAuthHeaders(isFormData ? null : "application/json"), ...(extraHeaders || {}) }
         const config = { headers, ...rest }

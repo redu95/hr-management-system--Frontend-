@@ -24,7 +24,8 @@ const RequireAuth = ({ children, requiredPermission = null }) => {
   // Check if user is authenticated
   if (!isAuthenticated || !user) {
     console.log("❌ [REQUIRE_AUTH] User not authenticated, redirecting to login")
-    return <Navigate to="/login" state={{ from: location }} replace />
+    // Mark that we want to force logout when landing on login page
+    return <Navigate to="/login" state={{ from: location, forceLogout: true }} replace />
   }
 
   // Check specific permission if required
@@ -49,7 +50,7 @@ const RequireAuth = ({ children, requiredPermission = null }) => {
     currentPath: location.pathname,
     requiredPermission,
   })
-  
+
 
   return children
 }

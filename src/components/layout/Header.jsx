@@ -22,6 +22,7 @@ import useAuthStore from "../../store/authStore"
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from "react"
 import ApiService from "../../services/apiService"
+import * as DepartmentService from '../../services/departmentService'
 
 const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
     const location = useLocation()
@@ -29,12 +30,66 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
 
     // Add state for current user info from /auth/me
     const [currentUser, setCurrentUser] = useState({})
+    const [departmentName, setDepartmentName] = useState('')
+    const [deptLoading, setDeptLoading] = useState(false)
 
     useEffect(() => {
         ApiService.fetchCurrentUser()
             .then(data => setCurrentUser(data))
             .catch(() => setCurrentUser({}))
     }, [])
+
+    // Resolve department name for managers (or when currentUser contains department)
+    useEffect(() => {
+        let mounted = true
+        const resolveDept = async () => {
+            setDepartmentName('')
+            if (!currentUser) return
+            try {
+                setDeptLoading(true)
+                // If backend includes department on user, prefer that
+                if (currentUser.department) {
+                    const dep = currentUser.department
+                    if (typeof dep === 'string' || typeof dep === 'number') {
+                        try {
+                            const d = await DepartmentService.getDepartment(dep)
+                            if (!mounted) return
+                            setDepartmentName(d?.name || '')
+                            return
+                        } catch (_) {
+                            // fallthrough to fetch all
+                        }
+                    } else if (typeof dep === 'object') {
+                        setDepartmentName(dep.name || '')
+                        return
+                    }
+                }
+
+                // If user role is Manager, try to find department where manager == user.id
+                if (user?.role === 'Manager') {
+                    const deps = await DepartmentService.getDepartments()
+                    if (!mounted) return
+                    const list = Array.isArray(deps) ? deps : deps?.results || []
+                    const found = list.find(d => {
+                        // manager may be id or nested object
+                        if (!d) return false
+                        if (d.manager && typeof d.manager === 'object') return d.manager.id === user.id
+                        return d.manager === user.id
+                    })
+                    if (found) {
+                        setDepartmentName(found.name || '')
+                        return
+                    }
+                }
+            } catch (e) {
+                console.error('Error resolving department name', e)
+            } finally {
+                if (mounted) setDeptLoading(false)
+            }
+        }
+        resolveDept()
+        return () => { mounted = false }
+    }, [currentUser, user])
 
     const bgGradient = useColorModeValue("linear(to-r, purple.600, purple.900)", "linear(to-r, blue.600, purple.700)")
 
@@ -84,7 +139,7 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
 
                 {/* Right-side controls */}
                 <HStack spacing={{ base: 2, sm: 4, md: 6 }}>
-                    
+
 
                     {/* Dark/Light Mode Switch */}
                     <HStack spacing={2}>
@@ -103,23 +158,28 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
 
                     {/* User Profile */}
                     <Link to="/profile">
-                    <HStack spacing={3} cursor="pointer">
-                        <Avatar
-                            size="sm"
-                            name={currentUser.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
-                            src={`https://ui-avatars.com/api/?name=${currentUser.name || `${currentUser.first_name || ""}+${currentUser.last_name || ""}`}&background=random&color=fff&size=40`}
-                            border="2px solid"
-                            borderColor="whiteAlpha.300"
-                        />
-                        <VStack spacing={0} align="start" display={{ base: "none", md: "flex" }}>
-                            <Text fontSize="sm" fontWeight="semibold" color="white">
-                                {currentUser.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()}
-                            </Text>
-                            <Badge colorScheme={getRoleBadgeColor(user?.role)} size="sm">
-                                {user?.role || "Employee"}
-                            </Badge>
-                        </VStack>
-                    </HStack>
+                        <HStack spacing={3} cursor="pointer">
+                            <Avatar
+                                size="sm"
+                                name={currentUser.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`}
+                                src={`https://ui-avatars.com/api/?name=${currentUser.name || `${currentUser.first_name || ""}+${currentUser.last_name || ""}`}&background=random&color=fff&size=40`}
+                                border="2px solid"
+                                borderColor="whiteAlpha.300"
+                            />
+                            <VStack spacing={0} align="start" display={{ base: "none", md: "flex" }}>
+                                <Text fontSize="sm" fontWeight="semibold" color="white">
+                                    {currentUser.name || `${currentUser.first_name || ""} ${currentUser.last_name || ""}`.trim()}
+                                </Text>
+                                <HStack spacing={2}>
+                                    <Badge colorScheme={getRoleBadgeColor(user?.role)} size="sm">
+                                        {user?.role || "Employee"}
+                                    </Badge>
+                                    {user?.role === 'Manager' && (
+                                        <Text fontSize="xs" color="whiteAlpha.800">{deptLoading ? 'Loading dept…' : (departmentName || 'No department')}</Text>
+                                    )}
+                                </HStack>
+                            </VStack>
+                        </HStack>
                     </Link>
                 </HStack>
             </Flex>

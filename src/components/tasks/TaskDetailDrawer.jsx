@@ -86,7 +86,7 @@ function DepartmentSelect({ value, onChange, isDisabled = false }) {
 export default function TaskDetailDrawer({ taskId, isOpen, onClose }) {
     const toast = useToast()
     const { data: task, isLoading, refetch } = useTask(taskId)
-        const { user, hasPermission } = useAuthStore()
+    const { user, hasPermission } = useAuthStore()
     const updateTask = useUpdateTask()
     const assignTask = useAssignTask()
     const unassignTask = useUnassignTask()
@@ -100,7 +100,7 @@ export default function TaskDetailDrawer({ taskId, isOpen, onClose }) {
     const attachments = useMemo(() => attachmentsData?.results || attachmentsData || [], [attachmentsData])
     const history = useMemo(() => historyData?.results || historyData || [], [historyData])
 
-        const [edit, setEdit] = useState({ title: '', description: '', priority: 'medium', status: 'todo', due_date: '', department: '' })
+    const [edit, setEdit] = useState({ title: '', description: '', priority: 'medium', status: 'todo', due_date: '', department: '' })
     useEffect(() => {
         if (task) {
             setEdit({
@@ -108,11 +108,66 @@ export default function TaskDetailDrawer({ taskId, isOpen, onClose }) {
                 description: task.description || '',
                 priority: task.priority || 'medium',
                 status: task.status || 'todo',
-                    due_date: task.due_date ? new Date(task.due_date).toISOString().slice(0, 16) : '',
-                    department: task.department || '',
+                due_date: task.due_date ? new Date(task.due_date).toISOString().slice(0, 16) : '',
+                department: task.department || '',
             })
         }
     }, [task])
+
+    // Resolve manager department if user is a Manager and no department provided on task
+    const [managerDeptId, setManagerDeptId] = useState(null)
+    const [resolvingDept, setResolvingDept] = useState(false)
+    const [employeesList, setEmployeesList] = useState([])
+    const [empLoading, setEmpLoading] = useState(false)
+    const [empError, setEmpError] = useState('')
+    useEffect(() => {
+        let mounted = true
+        const resolveDept = async () => {
+            if (!user) return
+            if (user.department) {
+                setManagerDeptId(user.department)
+                return
+            }
+            if (user.role !== 'Manager') return
+            setResolvingDept(true)
+            try {
+                const deps = await ApiService.getDepartments()
+                const list = Array.isArray(deps) ? deps : deps?.results || []
+                const found = list.find(d => {
+                    if (!d) return false
+                    if (d.manager && typeof d.manager === 'object') return d.manager.id === user.id
+                    return d.manager === user.id
+                })
+                if (!mounted) return
+                if (found) setManagerDeptId(found.id)
+            } catch (e) {
+                // ignore
+            } finally {
+                if (mounted) setResolvingDept(false)
+            }
+        }
+        resolveDept()
+        return () => { mounted = false }
+    }, [user])
+
+    // Load employees for manager's department (if manager)
+    useEffect(() => {
+        const loadEmps = async () => {
+            if (!managerDeptId || user?.role !== 'Manager') return
+            setEmpLoading(true)
+            setEmpError('')
+            try {
+                const data = await ApiService.searchUsers({ role: 'employee', department: managerDeptId })
+                const list = Array.isArray(data) ? data : data?.results || []
+                setEmployeesList(list)
+            } catch (e) {
+                setEmpError(e.message)
+            } finally {
+                setEmpLoading(false)
+            }
+        }
+        loadEmps()
+    }, [managerDeptId, user])
 
     const handleSave = async () => {
         try {
@@ -123,8 +178,8 @@ export default function TaskDetailDrawer({ taskId, isOpen, onClose }) {
                     description: edit.description,
                     priority: edit.priority,
                     status: edit.status,
-                      due_date: edit.due_date ? new Date(edit.due_date).toISOString() : null,
-                      ...(edit.department ? { department: Number(edit.department) } : {}),
+                    due_date: edit.due_date ? new Date(edit.due_date).toISOString() : null,
+                    ...(edit.department ? { department: Number(edit.department) } : {}),
                 },
             })
             toast({ title: 'Task updated', status: 'success' })
@@ -134,8 +189,15 @@ export default function TaskDetailDrawer({ taskId, isOpen, onClose }) {
         }
     }
 
+    // Automatically replace existing assignees when a new user is selected
     const onSelectUser = async (u) => {
         try {
+            const prev = task?.assignees || []
+            // Unassign all existing
+            if (prev.length) {
+                await unassignTask.mutateAsync({ id: taskId, assignees: prev })
+            }
+            // Assign the new user
             await assignTask.mutateAsync({ id: taskId, assignees: [u.id] })
             toast({ title: `Assigned to ${u.username || u.email || u.id}`, status: 'success' })
             refetch()
@@ -227,11 +289,36 @@ export default function TaskDetailDrawer({ taskId, isOpen, onClose }) {
                                             <Field label="Due date">
                                                 <Input type="datetime-local" w="260px" value={edit.due_date} onChange={(e) => setEdit({ ...edit, due_date: e.target.value })} />
                                             </Field>
-                                                        </HStack>
-                                                        <HStack>
-                                                            <Field label="Department">
-                                                                <DepartmentSelect value={edit.department} onChange={(v) => setEdit({ ...edit, department: v })} isDisabled={!(user?.role === 'HR' || user?.role === 'CEO')} />
-                                                            </Field>
+                                        </HStack>
+                                        <HStack>
+                                            <Field label={user?.role === 'Manager' ? 'Assignee' : 'Department'}>
+                                                {user?.role === 'Manager' ? (
+                                                    <Select w="260px" value={edit.assignee || (task?.assignees?.[0] || '')} onChange={async (e) => {
+                                                        const newId = Number(e.target.value)
+                                                        const prev = task?.assignees || []
+                                                        if (prev.length && prev.length === 1 && prev[0] === newId) return
+                                                        try {
+                                                            // Unassign previous assignees
+                                                            if (prev.length) await unassignTask.mutateAsync({ id: taskId, assignees: prev })
+                                                            // Assign new one
+                                                            await assignTask.mutateAsync({ id: taskId, assignees: [newId] })
+                                                            toast({ title: 'Assignee changed', status: 'success' })
+                                                            refetch()
+                                                            setEdit({ ...edit, assignee: newId })
+                                                        } catch (err) {
+                                                            toast({ title: 'Change failed', description: err.message, status: 'error' })
+                                                        }
+                                                    }} isDisabled={empLoading}>
+                                                        {empLoading ? <option>Loading...</option> : (
+                                                            employeesList.length === 0 ? <option value="">No employees</option> : employeesList.map(emp => (
+                                                                <option key={emp.id} value={emp.id}>{emp.first_name || emp.username || emp.email || `User ${emp.id}`}</option>
+                                                            ))
+                                                        )}
+                                                    </Select>
+                                                ) : (
+                                                    <DepartmentSelect value={edit.department} onChange={(v) => setEdit({ ...edit, department: v })} isDisabled={!(user?.role === 'HR' || user?.role === 'CEO')} />
+                                                )}
+                                            </Field>
                                         </HStack>
                                         <HStack justify="flex-end">
                                             <Button leftIcon={<FaCheck />} colorScheme="blue" onClick={handleSave} isLoading={updateTask.isPending}>Save</Button>
@@ -240,7 +327,8 @@ export default function TaskDetailDrawer({ taskId, isOpen, onClose }) {
                                 </TabPanel>
                                 <TabPanel>
                                     <Stack spacing={3}>
-                                        <UserPicker onSelect={onSelectUser} departmentId={edit.department || task?.department || null} role="employee" />
+                                        {/* allow managers to pick employees in their department even if department field isn't editable */}
+                                        <UserPicker onSelect={onSelectUser} departmentId={edit.department || task?.department || managerDeptId || null} role="employee" />
                                         <Divider />
                                         <Stack>
                                             <Text fontWeight="bold">Current assignees</Text>

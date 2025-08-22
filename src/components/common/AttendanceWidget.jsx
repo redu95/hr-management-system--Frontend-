@@ -32,6 +32,8 @@ const AttendanceWidget = () => {
         return stored === today
     })
     const timerRef = useRef(null)
+    const [isCheckingIn, setIsCheckingIn] = useState(false)
+    const [isCheckingOut, setIsCheckingOut] = useState(false)
 
     // helper to parse time like HH:MM:SS or HH:MM:SS.ssssss into a Date today
     const parseTimeToday = (timeStr) => {
@@ -99,6 +101,8 @@ const AttendanceWidget = () => {
 
     const handleCheckIn = async () => {
         if (isDoneForToday) return
+        if (isCheckingIn) return
+        setIsCheckingIn(true)
         try {
             const res = await ApiService.apiCall("/api/attendance/check-in/", { method: "POST" })
             if (res.detail === "Already checked out.") {
@@ -156,11 +160,15 @@ const AttendanceWidget = () => {
                 }
             }
             toast({ title: err.message || "Check-in failed", status: "error", duration: 3000, isClosable: true })
+        } finally {
+            setIsCheckingIn(false)
         }
     }
 
     const handleCheckOut = async () => {
         if (isDoneForToday) return
+        if (isCheckingOut) return
+        setIsCheckingOut(true)
         try {
             const res = await ApiService.apiCall("/api/attendance/check-out/", { method: "POST" })
             if (res.detail === "Already checked out.") {
@@ -197,6 +205,8 @@ const AttendanceWidget = () => {
                 return
             }
             toast({ title: err.message || "Check-out failed", status: "error", duration: 3000, isClosable: true })
+        } finally {
+            setIsCheckingOut(false)
         }
     }
 
@@ -207,7 +217,7 @@ const AttendanceWidget = () => {
             {checkInTime && !checkOutInfo && !isDoneForToday ? (
                 <HStack justify="space-between">
                     <Text fontSize="sm">Checked in at {checkInTime.split(".")[0]} | Working: {elapsed}</Text>
-                    <Button size="sm" colorScheme="red" onClick={handleCheckOut}>
+                    <Button size="sm" colorScheme="red" onClick={handleCheckOut} isLoading={isCheckingOut} isDisabled={isCheckingOut || isDoneForToday}>
                         Check Out
                     </Button>
                 </HStack>
@@ -219,7 +229,7 @@ const AttendanceWidget = () => {
                     </Button>
                 </HStack>
             ) : (
-                <Button size="sm" colorScheme="green" onClick={handleCheckIn} disabled={isDoneForToday}>
+                <Button size="sm" colorScheme="green" onClick={handleCheckIn} isLoading={isCheckingIn} isDisabled={isCheckingIn || isDoneForToday}>
                     Check In
                 </Button>
             )}
