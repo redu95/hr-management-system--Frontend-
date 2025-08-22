@@ -19,6 +19,7 @@ import { BeatLoader } from "react-spinners"
 import ProfilePage from "./pages/ProfilePage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
 import ResetPasswordPage from "./pages/ResetPasswordPage"
+import TasksPage from "./pages/TasksPage"
 
 const queryClient = new QueryClient()
 
@@ -124,6 +125,14 @@ function App() {
             />
 
             <Route path="/logout" element={<Logout />} />
+            <Route
+              path="/tasks"
+              element={
+                <RequireAuth>
+                  <TasksPage />
+                </RequireAuth>
+              }
+            />
           </Route>
 
           <Route path="*" element={<UnauthorizedPage />} />

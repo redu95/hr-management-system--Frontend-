@@ -5,21 +5,21 @@ class ApiService {
     }
 
     // Get auth headers with token
-    getAuthHeaders() {
+    getAuthHeaders(contentType = "application/json") {
         const token = localStorage.getItem("accessToken")
-        return {
-            "Content-Type": "application/json",
+        const headers = {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
         }
+        if (contentType) headers["Content-Type"] = contentType
+        return headers
     }
 
     // Generic API call method
     apiCall = async (endpoint, options = {}) => {
         const url = `${this.baseURL}${endpoint}`
-        const config = {
-            headers: this.getAuthHeaders(),
-            ...options,
-        }
+        const { isFormData = false, headers: extraHeaders, ...rest } = options
+        const headers = { ...this.getAuthHeaders(isFormData ? null : "application/json"), ...(extraHeaders || {}) }
+        const config = { headers, ...rest }
 
         console.log(`🌐 [API] ${config.method || "GET"} ${url}`)
 

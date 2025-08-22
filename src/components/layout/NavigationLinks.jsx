@@ -7,6 +7,7 @@ import {
     FaUsers,
     FaBuilding,
     FaCalendarAlt,
+    FaTasks,
     FaChartBar,
     FaCog,
     FaUserPlus,
@@ -77,6 +78,11 @@ const NavigationLinks = ({ onLinkClick }) => {
                         Leave Management
                     </NavItem>
                 )}
+
+                {/* Tasks - Available to all authenticated users */}
+                <NavItem to="/tasks" icon={FaTasks} onClick={onLinkClick}>
+                    Tasks
+                </NavItem>
 
                 {/* Reports - Available to CEO, Manager, HR */}
                 <RoleBasedComponent requiredPermission="canViewReports">
