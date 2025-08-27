@@ -4,6 +4,36 @@ class ApiService {
         this.baseURL = import.meta.env.VITE_BASE_URL || "http://localhost:8000"
     }
 
+    // Complaints & Reports endpoints
+    listComplaints = async ({ page = 1 } = {}) => {
+        const qs = page ? `?page=${encodeURIComponent(page)}` : ""
+        return this.apiCall(`/api/complaints/${qs}`)
+    }
+
+    getComplaint = async (id) => {
+        return this.apiCall(`/api/complaints/${id}/`)
+    }
+
+    createComplaint = async (payload) => {
+        // payload: { type, subject, description, target_user?, send_to_ceo? }
+        return this.apiCall("/api/complaints/", {
+            method: "POST",
+            body: JSON.stringify(payload),
+        })
+    }
+
+    setComplaintStatus = async (id, status) => {
+        return this.apiCall(`/api/complaints/${id}/set-status`, {
+            method: "POST",
+            body: JSON.stringify({ status }),
+        })
+    }
+
+    // High-level users (HR, Managers, CEO)
+    getHighLevelUsers = async () => {
+        return this.apiCall("/api/high-level-users/")
+    }
+
     // Get auth headers with token
     getAuthHeaders(contentType = "application/json") {
         const token = localStorage.getItem("accessToken")

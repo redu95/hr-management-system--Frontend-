@@ -20,6 +20,9 @@ import ProfilePage from "./pages/ProfilePage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
 import ResetPasswordPage from "./pages/ResetPasswordPage"
 import TasksPage from "./pages/TasksPage"
+import ComplaintsListPage from "./pages/ComplaintsListPage"
+import ComplaintCreatePage from "./pages/ComplaintCreatePage"
+import ComplaintDetailPage from "./pages/ComplaintDetailPage"
 
 const queryClient = new QueryClient()
 
@@ -130,6 +133,31 @@ function App() {
               element={
                 <RequireAuth>
                   <TasksPage />
+                </RequireAuth>
+              }
+            />
+
+            <Route
+              path="/complaints"
+              element={
+                <RequireAuth>
+                  <ComplaintsListPage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/complaints/new"
+              element={
+                <RequireAuth>
+                  <ComplaintCreatePage />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/complaints/:id"
+              element={
+                <RequireAuth>
+                  <ComplaintDetailPage />
                 </RequireAuth>
               }
             />

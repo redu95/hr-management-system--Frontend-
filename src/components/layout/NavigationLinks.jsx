@@ -13,6 +13,7 @@ import {
     FaUserPlus,
     FaSignOutAlt,
 } from "react-icons/fa"
+import { MdReportProblem } from "react-icons/md"
 import useAuthStore from "../../store/authStore"
 import RoleBasedComponent from "../common/RoleBasedComponent"
 import { usePrefetchDirectory } from '../../hooks/useDirectoryData'
@@ -82,6 +83,11 @@ const NavigationLinks = ({ onLinkClick }) => {
                 {/* Tasks - Available to all authenticated users */}
                 <NavItem to="/tasks" icon={FaTasks} onClick={onLinkClick}>
                     Tasks
+                </NavItem>
+
+                {/* Complaints - Available to all authenticated users */}
+                <NavItem to="/complaints" icon={MdReportProblem} onClick={onLinkClick}>
+                    Complaints
                 </NavItem>
 
                 {/* Reports - Available to CEO, Manager, HR */}
