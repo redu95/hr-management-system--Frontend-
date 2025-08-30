@@ -56,7 +56,7 @@ export default function ComplaintsListPage() {
     }
 
     return (
-        <VStack align="stretch" spacing={4}>
+        <VStack align="stretch" spacing={4} padding={4}>
             <HStack justify="space-between">
                 <Heading size="md">Complaints & Reports</Heading>
                 <Button as={Link} to="/complaints/new" colorScheme="blue" leftIcon={<FaPlus />}>New</Button>

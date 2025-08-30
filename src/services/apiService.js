@@ -23,7 +23,7 @@ class ApiService {
     }
 
     setComplaintStatus = async (id, status) => {
-        return this.apiCall(`/api/complaints/${id}/set-status`, {
+        return this.apiCall(`/api/complaints/${id}/set-status/`, {
             method: "POST",
             body: JSON.stringify({ status }),
         })

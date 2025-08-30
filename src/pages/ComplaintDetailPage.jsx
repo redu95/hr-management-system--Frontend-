@@ -48,7 +48,7 @@ export default function ComplaintDetailPage() {
     if (!item) return null
 
     return (
-        <VStack align="stretch" spacing={4}>
+        <VStack align="stretch" spacing={4} padding={4}>
             <HStack justify="space-between">
                 <Heading size="md">Complaint #{item.id}</Heading>
                 <HStack>

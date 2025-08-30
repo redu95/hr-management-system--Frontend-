@@ -63,7 +63,7 @@ export default function ComplaintCreatePage() {
     }
 
     return (
-        <VStack align="stretch" spacing={6}>
+        <VStack align="stretch" spacing={6} padding={4}>
             <Heading size="md">New Complaint / Report</Heading>
 
             <Box borderWidth="1px" borderRadius="lg" p={4}>
