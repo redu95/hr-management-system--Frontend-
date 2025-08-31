@@ -1,4 +1,7 @@
 // Centralized API service for all backend calls
+import useAuthStore from "../store/authStore"
+
+// Centralized API service for all backend calls
 class ApiService {
     constructor() {
         this.baseURL = import.meta.env.VITE_BASE_URL || "http://localhost:8000"
@@ -55,25 +58,36 @@ class ApiService {
             return `${b}/${e.replace(/^\/+/, '')}`
         }
         const url = joinUrl(this.baseURL, endpoint)
-        const { isFormData = false, headers: extraHeaders, ...rest } = options
+        const { isFormData = false, headers: extraHeaders, _retry, ...rest } = options
         const headers = { ...this.getAuthHeaders(isFormData ? null : "application/json"), ...(extraHeaders || {}) }
         const config = { headers, ...rest }
 
         console.log(`🌐 [API] ${config.method || "GET"} ${url}`)
 
         try {
-            const response = await fetch(url, config)
-            // If access token expired or unauthorized, clear auth and redirect to login
+            let response = await fetch(url, config)
+            // If access token expired or unauthorized, attempt refresh once (except on auth endpoints)
             if (response.status === 401) {
-                console.error(`❌ [API] Unauthorized (${endpoint}), redirecting to login`)
-                // Clear stored tokens and user info
-                localStorage.removeItem("accessToken")
-                localStorage.removeItem("refreshToken")
-                localStorage.removeItem("user")
-                localStorage.removeItem("isAuthenticated")
-                // Redirect to login page
+                const isAuthEndpoint = /\/api\/auth\/token\/?/.test(endpoint) || /\/api\/auth\/token\/refresh\/?/.test(endpoint)
+                if (!_retry && !isAuthEndpoint) {
+                    console.warn(`🔄 [API] 401 on ${endpoint}, attempting token refresh and retry`)
+                    try {
+                        const newAccess = await useAuthStore.getState().refreshAccessToken()
+                        if (newAccess) {
+                            const retryHeaders = { ...headers, Authorization: `Bearer ${newAccess}` }
+                            const retryConfig = { ...rest, headers: retryHeaders }
+                            response = await fetch(url, retryConfig)
+                        }
+                    } catch (e) {
+                        // fallthrough to logout below
+                    }
+                }
+            }
+            if (response.status === 401) {
+                console.error(`❌ [API] Unauthorized (${endpoint}), logging out and redirecting to login`)
+                // Use store logout to clear state, then hard redirect
+                try { useAuthStore.getState().logout() } catch { /* ignore */ }
                 window.location.href = "/login"
-                // Stop further handling
                 return
             }
 
@@ -114,10 +128,11 @@ class ApiService {
     }
 
     createEmployee = async (data) => {
-        // Set role to Employee
+        // Ensure role is lowercase for backend consistency
+        const role = (data?.role || 'employee').toString().toLowerCase()
         return this.apiCall("/api/users/", {
             method: "POST",
-            body: JSON.stringify({ ...data, role: "Employee" }),
+            body: JSON.stringify({ ...data, role }),
         })
     }
 
@@ -201,6 +216,16 @@ class ApiService {
             method: "PATCH",
             body: JSON.stringify(data),
         })
+    }
+
+    // CEO Logs endpoint (CEO only)
+    getCeoLogs = async (params = {}) => {
+        const query = new URLSearchParams()
+        Object.entries(params || {}).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== "") query.append(k, v)
+        })
+        const qs = query.toString()
+        return this.apiCall(`/api/settings/logs/${qs ? `?${qs}` : ""}`)
     }
 
     // Leave Request endpoints
@@ -303,6 +328,33 @@ class ApiService {
         })
     }
 
+    // Enable / Disable user login (HR/CEO only)
+    disableUser = async (id) => {
+        return this.apiCall(`/api/users/${id}/disable/`, {
+            method: 'POST',
+            body: JSON.stringify({}),
+        })
+    }
+
+    enableUser = async (id) => {
+        return this.apiCall(`/api/users/${id}/enable/`, {
+            method: 'POST',
+            body: JSON.stringify({}),
+        })
+    }
+
+    // Register user via open endpoint (sends credentials email)
+    registerUser = async (payload) => {
+        // Expect: { email, first_name, last_name, role (lowercase), department?, password? }
+        const clean = { ...payload }
+        if (clean.role) clean.role = clean.role.toString().toLowerCase()
+        if (!clean.password) delete clean.password // omit to auto-generate
+        return this.apiCall("/api/auth/register/", {
+            method: 'POST',
+            body: JSON.stringify(clean),
+        })
+    }
+
     // Added method for employees to update their own profile.
     updateCurrentUser = async (data) => {
         return this.apiCall("/api/auth/me/", {
@@ -375,6 +427,57 @@ class ApiService {
         })
         const qs = query.toString()
         return this.apiCall(`/api/attendance/monthly-summary/${qs ? `?${qs}` : ""}`)
+    }
+
+    // Attendance: list team + self (manager sees department)
+    getAttendance = async (params = {}) => {
+        const query = new URLSearchParams()
+        Object.entries(params || {}).forEach(([k, v]) => {
+            if (v !== undefined && v !== null && v !== "") query.append(k, v)
+        })
+        const qs = query.toString()
+        return this.apiCall(`/api/attendance/${qs ? `?${qs}` : ""}`)
+    }
+
+    // Attendance: today status
+    getAttendanceToday = async () => {
+        return this.apiCall(`/api/attendance/today/`)
+    }
+
+    // Attendance: explicit wrappers for check-in/out
+    attendanceCheckIn = async () => {
+        return this.apiCall(`/api/attendance/check-in/`, { method: 'POST' })
+    }
+
+    attendanceCheckOut = async () => {
+        return this.apiCall(`/api/attendance/check-out/`, { method: 'POST' })
+    }
+
+    // Analytics endpoints (HR/CEO only)
+    analyticsHeadcountByDepartment = async () => {
+        return this.apiCall("/api/analytics/headcount-by-department/")
+    }
+
+    analyticsHiresVsExits = async ({ months = 6 } = {}) => {
+        const qs = new URLSearchParams()
+        if (months) qs.append("months", months)
+        return this.apiCall(`/api/analytics/hires-vs-exits/${qs.toString() ? `?${qs.toString()}` : ""}`)
+    }
+
+    analyticsLeaveStatus = async ({ days = 90 } = {}) => {
+        const qs = new URLSearchParams()
+        if (days) qs.append("days", days)
+        return this.apiCall(`/api/analytics/leave-status/${qs.toString() ? `?${qs.toString()}` : ""}`)
+    }
+
+    analyticsTasksPipeline = async ({ department_id } = {}) => {
+        const qs = new URLSearchParams()
+        if (department_id) qs.append("department_id", department_id)
+        return this.apiCall(`/api/analytics/tasks-pipeline/${qs.toString() ? `?${qs.toString()}` : ""}`)
+    }
+
+    analyticsPerformanceAvgByDepartment = async () => {
+        return this.apiCall("/api/analytics/performance-avg-by-department/")
     }
 }
 

@@ -13,6 +13,7 @@ import {
     FaUserPlus,
     FaSignOutAlt,
 } from "react-icons/fa"
+import { FaListAlt } from "react-icons/fa"
 import { MdReportProblem } from "react-icons/md"
 import useAuthStore from "../../store/authStore"
 import RoleBasedComponent from "../common/RoleBasedComponent"
@@ -110,6 +111,13 @@ const NavigationLinks = ({ onLinkClick }) => {
                         Settings
                     </NavItem>
                 </RoleBasedComponent>
+
+                {/* System Logs - CEO only */}
+                {(user?.role || '').toLowerCase() === 'ceo' && (
+                    <NavItem to="/system-logs" icon={FaListAlt} onClick={onLinkClick}>
+                        System Logs
+                    </NavItem>
+                )}
             </VStack>
 
             <Box p={4} borderTop="1px" borderColor={useColorModeValue("gray.200", "gray.700")}>

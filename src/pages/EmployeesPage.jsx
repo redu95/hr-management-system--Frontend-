@@ -130,7 +130,15 @@ const EmployeesPage = () => {
                 })
                 onEditClose()
             } else {
-                await ApiService.createEmployee(payload)
+                // Use register endpoint to trigger credentials email and proper role casing
+                const regPayload = {
+                    email: payload.email,
+                    first_name: payload.first_name,
+                    last_name: payload.last_name,
+                    role: 'employee',
+                    ...(payload.department ? { department: payload.department } : {}),
+                }
+                await ApiService.registerUser(regPayload)
                 toast({
                     title: "Success",
                     description: "Employee created successfully",
@@ -378,7 +386,7 @@ const EmployeesPage = () => {
                                                     </Badge>
                                                 </Td>
                                                 <Td>
-                                                    <HStack spacing={1}>
+                                                    <HStack spacing={2}>
                                                         <IconButton
                                                             icon={<FaEye />}
                                                             size="sm"
@@ -405,6 +413,24 @@ const EmployeesPage = () => {
                                                             onClick={() => openDeleteModal(employee)}
                                                             aria-label="Delete employee"
                                                         />
+                                                        {/* Enable/Disable login (HR/CEO only) */}
+                                                        {user?.role !== 'Manager' && (
+                                                            employee.is_active ? (
+                                                                <Button size="xs" variant="outline" onClick={async () => { await ApiService.disableUser(employee.id); toast({ title: 'User disabled', status: 'success' }); refetchEmployees() }}>Disable</Button>
+                                                            ) : (
+                                                                <Button size="xs" variant="outline" onClick={async () => { await ApiService.enableUser(employee.id); toast({ title: 'User enabled', status: 'success' }); refetchEmployees() }}>Enable</Button>
+                                                            )
+                                                        )}
+                                                        {/* Promote/Demote (HR/CEO only). Only show if employee role toggles apply */}
+                                                        {user?.role !== 'Manager' && (
+                                                            <>
+                                                                {String(employee.role || '').toLowerCase() === 'manager' ? (
+                                                                    <Button size="xs" colorScheme="purple" variant="ghost" onClick={async () => { await ApiService.demoteUser(employee.id); toast({ title: 'Demoted to employee', status: 'success' }); refetchEmployees() }}>Demote</Button>
+                                                                ) : (
+                                                                    <Button size="xs" colorScheme="purple" variant="ghost" onClick={async () => { await ApiService.promoteUser(employee.id); toast({ title: 'Promoted to manager', status: 'success' }); refetchEmployees() }}>Promote</Button>
+                                                                )}
+                                                            </>
+                                                        )}
                                                     </HStack>
                                                 </Td>
                                             </Tr>

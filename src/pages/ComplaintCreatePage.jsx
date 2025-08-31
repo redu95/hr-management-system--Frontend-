@@ -5,6 +5,7 @@ import ApiService from "../services/apiService"
 import UserPicker from "../components/tasks/UserPicker"
 import useAuthStore from "../store/authStore"
 import { useNavigate } from "react-router-dom"
+import { useCreateComplaint } from "../hooks/useComplaints"
 
 export default function ComplaintCreatePage() {
     const [type, setType] = useState("employee_complaint")
@@ -17,6 +18,7 @@ export default function ComplaintCreatePage() {
     const toast = useToast()
     const { user } = useAuthStore()
     const navigate = useNavigate()
+    const createComplaint = useCreateComplaint()
 
     const roleLower = (user?.role || "").toLowerCase()
     const isManager = roleLower === "manager"
@@ -50,16 +52,11 @@ export default function ComplaintCreatePage() {
         }
 
         setSaving(true)
-        try {
-            const res = await ApiService.createComplaint(payload)
-            toast({ title: "Submitted", status: "success" })
-            navigate(`/complaints/${res.id}`)
-        } catch (e) {
-            const detail = e?.data ? JSON.stringify(e.data) : e.message
-            toast({ title: "Failed to submit", description: detail, status: "error", duration: 4000 })
-        } finally {
-            setSaving(false)
-        }
+        createComplaint.mutate(payload, {
+            onSuccess: (res) => { toast({ title: "Submitted", status: "success" }); navigate(`/complaints/${res.id}`) },
+            onError: (e) => { const detail = e?.data ? JSON.stringify(e.data) : e.message; toast({ title: "Failed to submit", description: detail, status: "error", duration: 4000 }) },
+            onSettled: () => setSaving(false),
+        })
     }
 
     return (

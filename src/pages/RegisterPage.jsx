@@ -29,17 +29,20 @@ import {
 import { motion } from "framer-motion"
 import { FaUserPlus, FaArrowLeft, FaEye, FaEyeSlash } from "react-icons/fa"
 import useAuthStore from "../store/authStore"
+import { useDepartments } from "../hooks/useDirectoryData"
 
 const MotionBox = motion(Box)
 const MotionCard = motion(Card)
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
-        username: "",
+        first_name: "",
+        last_name: "",
         email: "",
         password: "",
         confirmPassword: "",
-        role: "",
+        role: "employee",
+        department: "",
     })
     const [showPassword, setShowPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -47,7 +50,8 @@ const RegisterPage = () => {
     const navigate = useNavigate()
     const toast = useToast()
 
-    const { register, user } = useAuthStore()
+    const { user } = useAuthStore()
+    const { data: departments = [] } = useDepartments()
 
     const bgGradient = useColorModeValue("linear(to-br, green.50, blue.50)", "linear(to-br, gray.900, green.900)")
     const cardBg = useColorModeValue("white", "gray.800")
@@ -61,7 +65,7 @@ const RegisterPage = () => {
     }
 
     const validateForm = () => {
-        if (!formData.username || !formData.email || !formData.password || !formData.role) {
+        if (!formData.first_name || !formData.last_name || !formData.email || !formData.role) {
             toast({
                 title: "Missing Information",
                 description: "Please fill in all required fields",
@@ -72,7 +76,7 @@ const RegisterPage = () => {
             return false
         }
 
-        if (formData.password !== formData.confirmPassword) {
+        if (formData.password && formData.password !== formData.confirmPassword) {
             toast({
                 title: "Password Mismatch",
                 description: "Passwords do not match",
@@ -83,7 +87,7 @@ const RegisterPage = () => {
             return false
         }
 
-        if (formData.password.length < 6) {
+        if (formData.password && formData.password.length < 6) {
             toast({
                 title: "Weak Password",
                 description: "Password must be at least 6 characters long",
@@ -114,39 +118,29 @@ const RegisterPage = () => {
 
         setLoading(true)
         try {
-            const userData = {
-                username: formData.username,
+            const payload = {
                 email: formData.email,
-                password: formData.password,
-                role: formData.role,
+                first_name: formData.first_name,
+                last_name: formData.last_name,
+                role: (formData.role || 'employee').toLowerCase(),
+                ...(formData.department ? { department: Number(formData.department) } : {}),
+                ...(formData.password ? { password: formData.password } : {}),
             }
 
-            await register(userData)
+            const res = await (await import("../services/apiService")).default.registerUser(payload)
 
             toast({
                 title: "Registration Successful",
-                description: `User ${formData.username} has been created successfully`,
+                description: res?.message || `User ${formData.email} created. Credentials email sent.`,
                 status: "success",
                 duration: 3000,
                 isClosable: true,
             })
 
-            // Reset form
-            setFormData({
-                username: "",
-                email: "",
-                password: "",
-                confirmPassword: "",
-                role: "",
-            })
+            setFormData({ first_name: "", last_name: "", email: "", password: "", confirmPassword: "", role: "employee", department: "" })
         } catch (error) {
-            toast({
-                title: "Registration Failed",
-                description: error.message || "Failed to create user",
-                status: "error",
-                duration: 4000,
-                isClosable: true,
-            })
+            const msg = error?.data?.errors ? Object.values(error.data.errors).flat().join(", ") : (error.message || "Failed to create user")
+            toast({ title: "Registration Failed", description: msg, status: "error", duration: 4000, isClosable: true })
         } finally {
             setLoading(false)
         }
@@ -209,14 +203,28 @@ const RegisterPage = () => {
                             </HStack>
 
                             <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
-                                {/* Username */}
+                                {/* First Name */}
                                 <GridItem>
                                     <FormControl isRequired>
-                                        <FormLabel>Username</FormLabel>
+                                        <FormLabel>First Name</FormLabel>
                                         <Input
-                                            value={formData.username}
-                                            onChange={(e) => handleInputChange("username", e.target.value)}
-                                            placeholder="Enter username"
+                                            value={formData.first_name}
+                                            onChange={(e) => handleInputChange("first_name", e.target.value)}
+                                            placeholder="Enter first name"
+                                            size="lg"
+                                            disabled={loading}
+                                        />
+                                    </FormControl>
+                                </GridItem>
+
+                                {/* Last Name */}
+                                <GridItem>
+                                    <FormControl isRequired>
+                                        <FormLabel>Last Name</FormLabel>
+                                        <Input
+                                            value={formData.last_name}
+                                            onChange={(e) => handleInputChange("last_name", e.target.value)}
+                                            placeholder="Enter last name"
                                             size="lg"
                                             disabled={loading}
                                         />
@@ -224,7 +232,7 @@ const RegisterPage = () => {
                                 </GridItem>
 
                                 {/* Email */}
-                                <GridItem>
+                                <GridItem colSpan={{ base: 1, md: 2 }}>
                                     <FormControl isRequired>
                                         <FormLabel>Email Address</FormLabel>
                                         <Input
@@ -249,10 +257,28 @@ const RegisterPage = () => {
                                             size="lg"
                                             disabled={loading}
                                         >
-                                            <option value="CEO">CEO</option>
-                                            <option value="Manager">Manager</option>
-                                            <option value="HR">HR</option>
-                                            <option value="Employee">Employee</option>
+                                            <option value="ceo">CEO</option>
+                                            <option value="manager">Manager</option>
+                                            <option value="hr">HR</option>
+                                            <option value="employee">Employee</option>
+                                        </Select>
+                                    </FormControl>
+                                </GridItem>
+
+                                {/* Department (optional; manager auto-assigns backend) */}
+                                <GridItem>
+                                    <FormControl>
+                                        <FormLabel>Department</FormLabel>
+                                        <Select
+                                            value={formData.department}
+                                            onChange={(e) => handleInputChange("department", e.target.value)}
+                                            placeholder="Select department (optional)"
+                                            size="lg"
+                                            disabled={loading}
+                                        >
+                                            {departments.map((d) => (
+                                                <option key={d.id} value={d.id}>{d.name}</option>
+                                            ))}
                                         </Select>
                                     </FormControl>
                                 </GridItem>
@@ -266,7 +292,7 @@ const RegisterPage = () => {
                                                 type={showPassword ? "text" : "password"}
                                                 value={formData.password}
                                                 onChange={(e) => handleInputChange("password", e.target.value)}
-                                                placeholder="Enter password"
+                                                placeholder="Enter password (leave blank to auto-generate)"
                                                 disabled={loading}
                                             />
                                             <InputRightElement>
@@ -290,7 +316,7 @@ const RegisterPage = () => {
                                                 type={showConfirmPassword ? "text" : "password"}
                                                 value={formData.confirmPassword}
                                                 onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                                                placeholder="Confirm password"
+                                                placeholder="Confirm password (if entered)"
                                                 disabled={loading}
                                             />
                                             <InputRightElement>

@@ -23,6 +23,7 @@ import TasksPage from "./pages/TasksPage"
 import ComplaintsListPage from "./pages/ComplaintsListPage"
 import ComplaintCreatePage from "./pages/ComplaintCreatePage"
 import ComplaintDetailPage from "./pages/ComplaintDetailPage"
+import SystemLogsPage from "./pages/SystemLogsPage"
 
 const queryClient = new QueryClient()
 
@@ -158,6 +159,15 @@ function App() {
               element={
                 <RequireAuth>
                   <ComplaintDetailPage />
+                </RequireAuth>
+              }
+            />
+
+            <Route
+              path="/system-logs"
+              element={
+                <RequireAuth requiredPermission="canManageSettings">
+                  <SystemLogsPage />
                 </RequireAuth>
               }
             />
