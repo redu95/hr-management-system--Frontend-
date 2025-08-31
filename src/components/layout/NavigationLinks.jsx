@@ -8,7 +8,6 @@ import {
     FaBuilding,
     FaCalendarAlt,
     FaTasks,
-    FaChartBar,
     FaCog,
     FaUserPlus,
     FaSignOutAlt,
@@ -91,12 +90,7 @@ const NavigationLinks = ({ onLinkClick }) => {
                     Complaints
                 </NavItem>
 
-                {/* Reports - Available to CEO, Manager, HR */}
-                <RoleBasedComponent requiredPermission="canViewReports">
-                    <NavItem to="/reports" icon={FaChartBar} onClick={onLinkClick}>
-                        Reports
-                    </NavItem>
-                </RoleBasedComponent>
+                {/* Reports removed (wishlist API feature was dropped) */}
 
                 {/* Register Users - Available to CEO, HR */}
                 <RoleBasedComponent requiredPermission="canRegisterUsers">

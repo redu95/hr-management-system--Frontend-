@@ -56,7 +56,7 @@ const useAuthStore = create(
                     canManageEmployees: true,
                     canManageDepartments: true,
                     canManageLeave: true,
-                    canViewReports: true,
+                    // canViewReports removed
                     canManageSettings: true,
                     canRegisterUsers: true,
                     canViewAllData: true,
@@ -67,7 +67,7 @@ const useAuthStore = create(
                     canManageEmployees: true,
                     canManageDepartments: false,
                     canManageLeave: true,
-                    canViewReports: true,
+                    // canViewReports removed
                     canManageSettings: false,
                     canRegisterUsers: false,
                     canViewAllData: false,
@@ -78,7 +78,7 @@ const useAuthStore = create(
                     canManageEmployees: true,
                     canManageDepartments: true,
                     canManageLeave: true,
-                    canViewReports: true,
+                    // canViewReports removed
                     canManageSettings: true,
                     canRegisterUsers: true,
                     canViewAllData: true,
@@ -89,7 +89,7 @@ const useAuthStore = create(
                     canManageEmployees: false,
                     canManageDepartments: false,
                     canManageLeave: false, // Can only request leave, not manage
-                    canViewReports: false,
+                    // canViewReports removed
                     canManageSettings: false,
                     canRegisterUsers: false,
                     canViewAllData: false,
@@ -324,7 +324,7 @@ const useAuthStore = create(
                     "/dashboard": "canViewDashboard",
                     "/employees": "canManageEmployees",
                     "/departments": "canManageDepartments",
-                    "/reports": "canViewReports",
+                    // "/reports": "canViewReports", // removed
                     "/settings": "canManageSettings",
                     "/register": "canRegisterUsers",
                     "/profile": "canViewProfile",

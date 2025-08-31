@@ -8,7 +8,6 @@ import DashboardPage from "./pages/DashboardPage"
 import Employees from "./pages/EmployeesPage"
 import LeaveManagementPage from "./pages/LeaveManagementPage"
 import MyLeave from "./pages/MyLeave"
-import Reports from "./pages/ReportsPage"
 import Settings from "./pages/Settings"
 import Logout from "./pages/Logout"
 import AppLayout from "./components/layout/AppLayout"
@@ -92,14 +91,7 @@ function App() {
             <Route path="/leave" element={<LeaveManagementPage />} />
             <Route path="/my-leave" element={<MyLeave />} />
 
-            <Route
-              path="/reports"
-              element={
-                <RequireAuth requiredPermission="canViewReports">
-                  <Reports />
-                </RequireAuth>
-              }
-            />
+            {/** Reports route removed (wishlist API feature dropped) */}
 
             <Route
               path="/register"

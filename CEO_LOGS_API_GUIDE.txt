@@ -1,0 +1,52 @@
+CEO Logs API Guide
+Updated: 2025-08-31
+
+Purpose
+Provide a paginated feed of recent actions across the API for CEO visibility.
+
+Endpoint
+- GET /api/settings/logs/
+- Auth: JWT, CEO only (403 otherwise)
+- Pagination: 15 per page
+- Query params (optional):
+  - action: exact match (e.g., api_call, user_disabled, user_enabled, complaint_created, task_created)
+  - actor: substring of actor email
+  - path: substring of path
+
+Response 200 example
+{
+  "count": 37,
+  "next": "/api/settings/logs/?page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 101,
+      "timestamp": "2025-08-31T10:22:11.123Z",
+      "actor_email": "hr@example.com",
+      "action": "user_disabled",
+      "summary": "POST /api/users/42/disable/ -> 200",
+      "method": "POST",
+      "path": "/api/users/42/disable/",
+      "status_code": 200,
+      "ip_address": "203.0.113.5",
+      "user_agent": "Mozilla/5.0 ...",
+      "target_model": "",
+      "target_object_id": "",
+      "extra": {}
+    }
+  ]
+}
+
+What gets logged
+- All requests under /api/ with method, path, status, actor (if authenticated), IP, UA.
+- Nice action codes heuristically added for common operations:
+  - user_disabled (POST /api/users/{id}/disable/)
+  - user_enabled (POST /api/users/{id}/enable/)
+  - complaint_created (POST /api/complaints)
+  - task_created (POST /api/tasks)
+  - otherwise api_call
+
+Notes
+- This is a minimal audit. If you need richer object-level summaries, we can push model signals (e.g., on create/delete) to include target_model/object_id and details.
+- To navigate, use next/previous links; 15 per page as requested.
+- For scripts or Postman, just use python in commands; no absolute venv paths are required.

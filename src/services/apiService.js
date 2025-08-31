@@ -453,32 +453,7 @@ class ApiService {
         return this.apiCall(`/api/attendance/check-out/`, { method: 'POST' })
     }
 
-    // Analytics endpoints (HR/CEO only)
-    analyticsHeadcountByDepartment = async () => {
-        return this.apiCall("/api/analytics/headcount-by-department/")
-    }
-
-    analyticsHiresVsExits = async ({ months = 6 } = {}) => {
-        const qs = new URLSearchParams()
-        if (months) qs.append("months", months)
-        return this.apiCall(`/api/analytics/hires-vs-exits/${qs.toString() ? `?${qs.toString()}` : ""}`)
-    }
-
-    analyticsLeaveStatus = async ({ days = 90 } = {}) => {
-        const qs = new URLSearchParams()
-        if (days) qs.append("days", days)
-        return this.apiCall(`/api/analytics/leave-status/${qs.toString() ? `?${qs.toString()}` : ""}`)
-    }
-
-    analyticsTasksPipeline = async ({ department_id } = {}) => {
-        const qs = new URLSearchParams()
-        if (department_id) qs.append("department_id", department_id)
-        return this.apiCall(`/api/analytics/tasks-pipeline/${qs.toString() ? `?${qs.toString()}` : ""}`)
-    }
-
-    analyticsPerformanceAvgByDepartment = async () => {
-        return this.apiCall("/api/analytics/performance-avg-by-department/")
-    }
+    // (Analytics endpoints removed; wishlist feature dropped)
 }
 
 export default new ApiService()
