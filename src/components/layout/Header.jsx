@@ -94,11 +94,12 @@ const Header = ({ onMenuClick, darkMode, setDarkMode }) => {
     const bgGradient = useColorModeValue("linear(to-r, purple.600, purple.900)", "linear(to-r, blue.600, purple.700)")
 
     const getPageTitle = (pathname) => {
-    const titles = {
+        const titles = {
             "/dashboard": "Dashboard",
             "/employees": "Employees",
             "/departments": "Departments",
             "/leave": user?.role === "Employee" ? "My Leave" : "Leave Management",
+            "/reports": "Reports",
             "/settings": "Settings",
             "/register": "Register Employee",
             "/profile": "Profile",
