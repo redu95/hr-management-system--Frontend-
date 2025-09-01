@@ -140,7 +140,7 @@ export default function TasksPage() {
     const bg = useColorModeValue('white', 'gray.800')
     const border = useColorModeValue('gray.200', 'gray.700')
     const [activeTaskId, setActiveTaskId] = useState(null)
-    const [view, setView] = useState('table') // 'table' | 'kanban'
+    const [view, setView] = useState('kanban') // 'table' | 'kanban'
 
     return (
         <Stack spacing={6} padding={5}>

@@ -1,7 +1,7 @@
 "use client"
 import { useState } from "react"
 import { Box, Button, Heading, HStack, Spinner, Table, Tbody, Td, Th, Thead, Tr, Text, VStack, useToast, Select } from "@chakra-ui/react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { FaPlus } from "react-icons/fa"
 import ComplaintStatusBadge from "../components/common/ComplaintStatusBadge"
 import useAuthStore from "../store/authStore"
@@ -11,7 +11,7 @@ export default function ComplaintsListPage() {
     const [page, setPage] = useState(1)
     const toast = useToast()
     const { user } = useAuthStore()
-    const navigate = useNavigate()
+    // note: avoid useNavigate here to prevent hook errors when rendered outside a Router
 
     const canUpdateStatus = ["HR", "CEO"].includes(user?.role)
     const { data, isFetching } = useComplaintsList(page)
@@ -59,10 +59,12 @@ export default function ComplaintsListPage() {
                             <Tr><Td colSpan={7}><Box p={4}><Text color="gray.500">No complaints</Text></Box></Td></Tr>
                         ) : (
                             results.map((c) => (
-                                <Tr key={c.id} _hover={{ bg: "gray.50" }} cursor="pointer" onClick={() => navigate(`/complaints/${c.id}`)}>
+                                <Tr key={c.id} _hover={{ bg: "gray.50" }}>
                                     <Td>#{c.id}</Td>
                                     <Td>{c.type?.replace(/_/g, " ")}</Td>
-                                    <Td>{c.subject}</Td>
+                                    <Td>
+                                        <Link to={`/complaints/${c.id}`}>{c.subject}</Link>
+                                    </Td>
                                     <Td>{c.created_by ? `${c.created_by.first_name || ''} ${c.created_by.last_name || ''}`.trim() || c.created_by.email : "-"}</Td>
                                     <Td>{c.target_user_detail ? `${c.target_user_detail.first_name || ''} ${c.target_user_detail.last_name || ''}`.trim() || c.target_user_detail.email : "-"}</Td>
                                     <Td>
@@ -86,9 +88,9 @@ export default function ComplaintsListPage() {
             </Box>
 
             <HStack justify="space-between">
-                <Button onClick={prevPage} isDisabled={!data.previous || page === 1}>Previous</Button>
+                <Button onClick={prevPage} isDisabled={!data?.previous || page === 1}>Previous</Button>
                 <Text>Page {page}</Text>
-                <Button onClick={nextPage} isDisabled={!data.next}>Next</Button>
+                <Button onClick={nextPage} isDisabled={!data?.next}>Next</Button>
             </HStack>
         </VStack>
     )
