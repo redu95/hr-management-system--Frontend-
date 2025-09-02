@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Box, Button, Card, CardBody, Container, Grid, Heading, HStack, Input, Text, VStack, useColorModeValue } from "@chakra-ui/react"
+import { Box, Button, Card, CardBody, Container, Grid, Heading, HStack, Input, Text, VStack, useColorModeValue, Table, Thead, Tbody, Tr, Th, Td } from "@chakra-ui/react"
 import { FaListAlt } from "react-icons/fa"
 import { useCeoLogs } from "../hooks/useCeoLogs"
 import useAuthStore from "../store/authStore"
@@ -51,30 +51,36 @@ export default function SystemLogsPage() {
             <Card bg={cardBg} shadow="md">
                 <CardBody p={0}>
                     <Box overflowX="auto">
-                        <Grid templateColumns={{ base: "1fr" }}>
-                            <Box>
-                                <Grid templateColumns={{ base: "1fr", md: "2fr 1fr 1fr 3fr" }} gap={0} px={4} py={3} borderBottomWidth="1px" fontWeight="semibold">
-                                    <Box>Timestamp</Box>
-                                    <Box>Actor</Box>
-                                    <Box>Action</Box>
-                                    <Box>Summary</Box>
-                                </Grid>
+                        <Table size="sm">
+                            <Thead>
+                                <Tr>
+                                    <Th>Timestamp</Th>
+                                    <Th>Actor</Th>
+                                    <Th>Action</Th>
+                                    <Th>Summary</Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
                                 {isFetching && (
-                                    <Box px={4} py={3}><Text color={textColor}>Loading...</Text></Box>
+                                    <Tr>
+                                        <Td colSpan={4}><Text color={textColor}>Loading...</Text></Td>
+                                    </Tr>
                                 )}
                                 {!isFetching && rows.map((row) => (
-                                    <Grid key={row.id} templateColumns={{ base: "1fr", md: "2fr 1fr 1fr 3fr" }} gap={0} px={4} py={3} borderBottomWidth="1px">
-                                        <Box>{new Date(row.timestamp).toLocaleString()}</Box>
-                                        <Box>{row.actor_email || "-"}</Box>
-                                        <Box>{row.action || "api_call"}</Box>
-                                        <Box>{row.summary || `${row.method} ${row.path} -> ${row.status_code}`}</Box>
-                                    </Grid>
+                                    <Tr key={row.id}>
+                                        <Td>{new Date(row.timestamp).toLocaleString()}</Td>
+                                        <Td>{row.actor_email || "-"}</Td>
+                                        <Td>{row.action || "api_call"}</Td>
+                                        <Td>{row.summary || `${row.method} ${row.path} -> ${row.status_code}`}</Td>
+                                    </Tr>
                                 ))}
                                 {!isFetching && rows.length === 0 && (
-                                    <Box px={4} py={3}><Text color={textColor}>No logs.</Text></Box>
+                                    <Tr>
+                                        <Td colSpan={4}><Text color={textColor}>No logs.</Text></Td>
+                                    </Tr>
                                 )}
-                            </Box>
-                        </Grid>
+                            </Tbody>
+                        </Table>
                     </Box>
                 </CardBody>
             </Card>

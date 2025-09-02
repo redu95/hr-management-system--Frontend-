@@ -148,9 +148,10 @@ export default function TasksPage() {
                 <Heading size="lg">Tasks</Heading>
             </Flex>
 
-            {/* Create form */}
-            <Box bg={bg} borderWidth="1px" borderColor={border} borderRadius="md" p={4}>
-                <Heading size="sm" mb={3}>Create Task</Heading>
+            {/* Create form - hide for Employee role */}
+            {user?.role !== 'Employee' && (
+                <Box bg={bg} borderWidth="1px" borderColor={border} borderRadius="md" p={4}>
+                    <Heading size="sm" mb={3}>Create Task</Heading>
                 <Stack direction={{ base: 'column', md: 'row' }} spacing={3}>
                     <Input placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
                     <Select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
@@ -182,7 +183,8 @@ export default function TasksPage() {
                         Add Task
                     </Button>
                 </HStack>
-            </Box>
+                </Box>
+            )}
 
             {/* Filters */}
             <Flex gap={3} align="center" wrap="wrap">

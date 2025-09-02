@@ -647,7 +647,7 @@ const EmployeesPage = () => {
                 </ModalContent>
             </Modal>
 
-            {/* View Employee Modal */}
+            {/* View Employee Modal */} 
             <Modal isOpen={isViewOpen} onClose={onViewClose} size="4xl">
                 <ModalOverlay />
                 <ModalContent>

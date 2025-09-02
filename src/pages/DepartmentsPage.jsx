@@ -518,7 +518,7 @@ const DepartmentsPage = () => {
             </Modal>
 
             {/* View Department Modal */}
-            <Modal isOpen={isViewOpen} onClose={onViewClose} size="lg">
+            <Modal isOpen={isViewOpen} onClose={onViewClose} size="4xl">
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Department Details</ModalHeader>
